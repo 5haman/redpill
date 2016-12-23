@@ -1,0 +1,63 @@
+#!/bin/sh -eu
+
+base=/etc/s6/s6-rc
+date=$(TZ=UTC0 date +%Y%m%dT%H%M%SZ)
+tmpdir=$(mktemp -d)
+
+trap 'rm -rf "$tmpdir"' HUP INT QUIT TERM
+
+mkdir /run/s6-rc
+for svcdir in "$base"/source/* ; do
+  if test -r "$svcdir"/disabled ; then
+    continue
+  elif test -r "$svcdir"/instances ; then
+    svcname=${svcdir##*/}
+    outdir=${tmpdir}/${svcname}
+
+    mkdir "$outdir"
+    printf 'bundle\n' > "$outdir"/type
+    sed -e "s/^/${svcname}@/" -e "s@/@-@g" "$svcdir"/instances > "$outdir"/contents
+
+    while read -r instance ; do
+      outdir=${tmpdir}/${svcname}@$(echo "${instance}" | tr / -)
+
+      cp -pR "$svcdir" "$outdir"
+      find "$outdir" -type f -exec sed -i "s@%I@${instance}@g" {} +
+    done < "$svcdir"/instances
+  else
+    cp -pR "$svcdir" "$tmpdir"
+  fi
+done
+
+for svcdir in "$tmpdir"/* ; do
+  if test -r "$svcdir"/logdir ; then
+    svcname=${svcdir##*/}
+    logname="${svcname}-logger"
+    outdir=${tmpdir}/${logname}
+    logdir=/var/log/$(cat "$svcdir"/logdir)
+
+    mkdir "$outdir"
+    printf '%s\n' "$logname" > "${svcdir}/producer-for"
+    printf '%s\n' "$svcname" > "${outdir}/consumer-for"
+    printf 'filesystems\n' > "$outdir"/dependencies
+    cat > "$outdir"/run << EOF
+#!/bin/execlineb -P
+if { install -dg logs -m 0750 -o logs ${logdir} }
+umask 027
+s6-setuidgid logs
+s6-log !lzip t ${logdir}
+EOF
+    chmod +x "$outdir"/run
+    printf 'longrun\n' > "$outdir"/type
+  fi
+done
+
+if s6-rc-compile -h nobody "${base}/compiled.${date}" "$tmpdir"; then
+  if test -d "${base}/compiled" ; then
+    s6-rc-update "${base}/compiled.${date}"
+  fi
+  rm -rf "${base}/compiled"
+  ln -fns "compiled.${date}" "${base}/compiled"
+fi
+
+rm -rf "$tmpdir"

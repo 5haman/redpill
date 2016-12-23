@@ -1,25 +1,27 @@
-NAME	  = bastion/litevm
+NAME	  = bastion/hyperdock-build
 TAG	  = latest
+VERSION   = 0.1
 FULLNAME  = $(NAME):$(TAG)
-BUILD_DIR = /build
+BUILD_DIR = /usr/src
 
-default: build iso
+default: build run
 
 build:
 	docker  build \
 		--build-arg BUILD_DIR=$(BUILD_DIR) \
+		--build-arg VERSION=$(VERSION) \
 		-t $(FULLNAME) .
 
-iso:
-	rm -rf build/*
+run:
+	#rm -rf build/*
 	docker run -it --rm \
-		-v $(PWD)/build:$(BUILD_DIR) \
+		-v $(PWD):$(BUILD_DIR) \
 		$(FULLNAME)
-	mv build/litevm.iso .
-	ls -la litevm.iso
+	mv build/hyperdock.iso .
+	ls -la hyperdock.iso
 
 push:
 	docker tag $(FULLNAME) $(FULLNAME)
 	docker push $(FULLNAME)
 
-.PHONY: build iso
+.PHONY: build
