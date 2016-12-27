@@ -1,0 +1,3 @@
+#!/bin/execlineb -P
+
+/sbin/syslogd -n -b 5 -s 500 -D

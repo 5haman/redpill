@@ -1,3 +1,0 @@
-#!/bin/execlineb -P
-
-/sbin/getty -L -8 38400 %I

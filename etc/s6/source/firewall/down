@@ -1,5 +1,0 @@
-if -t {
-  redirfd -w 1 /var/lib/nftables/current
-  nft list ruleset
-}
-foreground { nft flush ruleset }
