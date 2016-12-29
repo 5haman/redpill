@@ -17,7 +17,6 @@ run:
 	docker run -it --rm \
 		-v $(PWD):$(SRC_DIR) \
 		$(FULLNAME)
-	ls -la hyperdock.iso
 
 push:
 	docker tag $(FULLNAME) $(FULLNAME)

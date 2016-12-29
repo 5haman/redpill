@@ -1,2 +1,2 @@
 #!/bin/execlineb -P
-/sbin/getty -l /usr/bin/autologin 38400 tty1
+/sbin/getty 38400 tty1

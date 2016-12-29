@@ -1,2 +1,0 @@
-if { s6-echo " * init-stage2 starting\n" }
-s6-hostname hyperdock

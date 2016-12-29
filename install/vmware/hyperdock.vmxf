@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<Foundry>
+<VM>
+<VMId type="string">52 70 52 f0 80 c0 34 3b-ab 95 d7 9a e0 01 b3 13</VMId>
+<ClientMetaData>
+<clientMetaDataAttributes/>
+<HistoryEventList/></ClientMetaData>
+<vmxPathName type="string">hyperdock.vmx</vmxPathName></VM></Foundry>

@@ -14,7 +14,7 @@ RUN echo "http://dl-5.alpinelinux.org/alpine/v3.5/main" > $ROOT_DIR/etc/apk/repo
 	bash binutils grep gcc curl git make cpio \
 	mkinitfs xorriso musl-dev xz syslinux \
 	perl sed installkernel gmp-dev bc \
-	mpfr-dev mpc1-dev
+	mpfr-dev mpc1-dev open-vm-tools
 
 WORKDIR "${SRC_DIR}"
 

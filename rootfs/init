@@ -21,11 +21,9 @@ background
   if { s6-mount -o nodev,noexec,nosuid -t mqueue mqueue "/dev/mqueue" }
   if { mkdir -p "/dev/shm" }
   if { s6-mount -o noatime,nodev,noexec,nosuid -t tmpfs shm "/dev/shm" }
-
-  #if { s6-mount -t tmpfs -o mode=1777,noatime,nodev,noexec,nosuid,size=32M tmp "/tmp" }
 }
 
-if { s6-mount -t tmpfs -o noatime,size=32M tmpfs "/run" }
+if { s6-mount -t tmpfs -o noatime,size=16M tmpfs "/run" }
 if { s6-hiercopy "/etc/s6-rc"/image "/run" }
 redirfd -r 0 /dev/null
 redirfd -wnb 1 "/run"/service/s6-svscan-log/fifo

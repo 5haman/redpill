@@ -1,3 +1,5 @@
 #!/bin/sh
 
-/bin/login -f root
+clear
+echo -e "$(cat /etc/motd)"
+s6-envdir /etc/s6-rc/env /bin/bash -i
