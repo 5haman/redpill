@@ -1,25 +1,23 @@
-NAME	  = bastion/hyperdock-build
-TAG	  = latest
-VERSION   = 0.1
-FULLNAME  = $(NAME):$(TAG)
+NAME	  = hyperdock-build
+VERSION   = $(shell cat version)
+DOCKER    = $(shell which docker)
+FULLNAME  = $(NAME):$(VERSION)
 SRC_DIR   = /usr/src
 
-default: build run
+default: build
 
 build:
-	docker  build \
+	mkdir -p build
+	$(DOCKER) build \
 		--build-arg SRC_DIR=$(SRC_DIR) \
 		--build-arg VERSION=$(VERSION) \
 		-t $(FULLNAME) .
-
-run:
-	mkdir -p build
-	docker run -it --rm \
+	$(DOCKER) run -it --rm \
 		-v $(PWD):$(SRC_DIR) \
 		$(FULLNAME)
 
-push:
-	docker tag $(FULLNAME) $(FULLNAME)
-	docker push $(FULLNAME)
+install:
+	mkdir -p $(HOME)/.hyperdock
+	cp -R install/* $(HOME)/.hyperdock
 
 .PHONY: build

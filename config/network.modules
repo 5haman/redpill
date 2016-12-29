@@ -20,3 +20,4 @@ kernel/net/netfilter/xt_addrtype.ko
 kernel/net/netfilter/xt_conntrack.ko
 kernel/net/xfrm/xfrm_algo.ko
 kernel/net/xfrm/xfrm_user.ko
+misc

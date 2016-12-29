@@ -39,15 +39,15 @@ build_kernel() {
 
     # Build kernel
     cd ${BUILD_DIR}/linux
-    #make -j${THREADS} silentoldconfig
-    #make -j${THREADS} DISABLE_PAX_PLUGINS=y bzImage
-    #make -j${THREADS} DISABLE_PAX_PLUGINS=y modules
+    make -j${THREADS} silentoldconfig
+    make -j${THREADS} DISABLE_PAX_PLUGINS=y bzImage
+    make -j${THREADS} DISABLE_PAX_PLUGINS=y modules
     mkdir -p /boot
+    cp -R /lib/modules/*-grsec/misc /tmp
     rm -rf /lib/modules/*
     make install 
     make modules_install
-    rm -rf $BUILD_DIR/modules
-    cp -R /lib/modules $BUILD_DIR/modules
+    cp -R /tmp/misc "/lib/modules/${KERNEL_VERSION}-${KERNEL_ID}/"
 }
 
 # make initial fs layout
@@ -93,7 +93,7 @@ install_pkg() {
 
     # install_docker
     cd $BUILD_DIR/docker
-    #cp -a dockerd docker-containerd docker-containerd-shim docker-proxy $ROOT_DIR/usr/bin
+    cp -a dockerd docker-containerd docker-containerd-shim docker-proxy $ROOT_DIR/usr/bin
  
     # prepare s6-rc compiled services
     chroot $ROOT_DIR /etc/rc.update
