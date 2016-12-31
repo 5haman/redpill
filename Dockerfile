@@ -12,10 +12,26 @@ ADD rootfs/etc/apk/repositories /etc/apk/repositories
 ADD rootfs/usr/bin/ /usr/bin/
 
 RUN apk-install -t .build-deps \
-	bash binutils grep gcc curl git make cpio \
-	mkinitfs xorriso musl-dev xz syslinux \
+	bash binutils coreutils grep gcc curl git make \
+	cpio mkinitfs xorriso musl-dev xz syslinux \
 	perl sed installkernel gmp-dev bc mpfr-dev mpc1-dev \
 	open-vm-tools open-vm-tools-grsec
+
+RUN apk-install \
+	apk-tools \
+        ca-certificates \
+        curl \
+        dhcpcd \
+        dropbear \
+        dropbear-ssh \
+        dropbear-scp \
+        dnsmasq \
+	haveged \
+        htop \
+        iftop \
+        iptables \
+        multitail \
+	tmux
 
 WORKDIR "${SRC_DIR}"
 

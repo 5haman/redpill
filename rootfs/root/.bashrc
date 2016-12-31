@@ -22,4 +22,8 @@ if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
 fi
 
+eval "$(tmuxifier init -)"
 
+if [ -z "$TMUX" ]; then
+    tmuxifier load-session tmux
+fi

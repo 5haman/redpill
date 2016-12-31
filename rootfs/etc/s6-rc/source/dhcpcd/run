@@ -1,3 +1,0 @@
-#!/bin/execlineb -P
-
-/sbin/dhcpcd -BM -4

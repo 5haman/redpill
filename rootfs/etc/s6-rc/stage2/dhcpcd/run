@@ -1,0 +1,4 @@
+#!/bin/execlineb -P
+fdmove -c 2 1
+exec -c
+/sbin/dhcpcd -BM -4 -S domain_name_servers=127.0.0.1 -z "eth*"

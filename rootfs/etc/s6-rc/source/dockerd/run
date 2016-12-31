@@ -1,4 +1,0 @@
-#!/bin/execlineb -P
-
-#s6-setuidgid docker
-/usr/bin/dockerd -H tcp://0.0.0.0 -p /var/run/dockerd.pid

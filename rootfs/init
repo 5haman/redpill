@@ -1,44 +1,39 @@
 #!/bin/execlineb -P
 
 export PATH "/usr/bin:/usr/sbin:/bin:/sbin"
-cd /
 
-foreground { printf " * S6 init started\n" }
+cd /
 s6-setsid -qb --
 umask 022
 emptyenv -p
 s6-envdir -I -- "/etc/s6-rc"/env
 
-foreground { printf " * Mounting filesystems\n" }
-if { s6-mount -t proc -o noatime proc "/proc" }
+if { s6-mount -o remount,size=20% rootfs / }
+if { s6-mount -wt proc proc "/proc" }
 background
 {
-  if { s6-mount -t sysfs -o mode=0755,nodev,noexec,nosuid sys "/sys" }
+  if { s6-mount -wt sysfs sys "/sys" }
   if { s6-mount -t devtmpfs -o mode=0755,noexec,nosuid,size=2M dev "/dev" }
-  if { mkdir -p "/dev/pts" }
-  if { s6-mount -t devpts -o mode=0620,noexec,nosuid devpts "/dev/pts" } 
-  if { mkdir -p "/dev/mqueue" }
-  if { s6-mount -o nodev,noexec,nosuid -t mqueue mqueue "/dev/mqueue" }
-  if { mkdir -p "/dev/shm" }
-  if { s6-mount -o noatime,nodev,noexec,nosuid -t tmpfs shm "/dev/shm" }
+  if { mkdir -p /dev/pts /dev/shm }
+  if { s6-mount -o nosuid,noexec,gid=5,mode=620,ptmxmode=000 -t devpts devpts /dev/pts }
+  if { s6-mount -o nosuid,nodev,noexec -t tmpfs shm /dev/shm }
+  mdev -s
 }
 
-if { s6-mount -t tmpfs -o noatime,size=16M tmpfs "/run" }
-if { s6-hiercopy "/etc/s6-rc"/image "/run" }
+if { s6-mount -t tmpfs -o noatime,size=8M tmpfs "/run" }
+if { s6-hiercopy "/etc/s6-rc"/stage1 "/run"/service }
 redirfd -r 0 /dev/null
 redirfd -wnb 1 "/run"/service/s6-svscan-log/fifo
 
-foreground { printf " * Starting rc.init\n" }
 background
 {
   s6-setsid --
-  redirfd -w 1 "/run"/service/s6-svscan-log/fifo
-  fdmove -c 1 2
-  "/etc/rc.init"
+  redirfd -wnb 1 "/run"/service/s6-svscan-log/fifo
+  fdmove -c 2 1
+  /etc/rc.init
 }
 unexport !
 
-foreground { printf " * Starting service supervisor\n" }
 cd "/run"/service
 fdmove -c 2 1
 s6-svscan -st0

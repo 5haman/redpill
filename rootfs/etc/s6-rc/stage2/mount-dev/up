@@ -1,0 +1,21 @@
+foreground {
+  if -t { grep -Fq hugetlbfs /proc/filesystems }
+  if -nt { mountpoint -q /dev/hugepages }
+  if { mkdir -p /dev/hugepages }
+  s6-mount -o nosuid,nodev,noexec -t hugetlbfs hugepages /dev/hugepages
+}
+foreground {
+  if -t { grep -Fq mqueue /proc/filesystems }
+  if -nt { mountpoint -q /dev/mqueue }
+  if { mkdir -p /dev/mqueue }
+  s6-mount -o nosuid,nodev,noexec -t mqueue mqueue /dev/mqueue
+}
+
+if { s6-ln -s /proc/self/fd /dev/fd }
+if { s6-ln -s /proc/kcore /dev/core }
+if { s6-ln -s loop0 /dev/loop }
+if { s6-ln -s ram0 /dev/ram }
+if { s6-ln -s rtc0 /dev/rtc }
+if { s6-ln -s fd/0 /dev/stdin }
+if { s6-ln -s fd/1 /dev/stdout }
+if { s6-ln -s fd/2 /dev/stderr }
