@@ -1,0 +1,6 @@
+sysctl
+haveged
+klogd
+syslogd
+crond
+fifo-cleanup

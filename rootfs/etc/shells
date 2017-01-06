@@ -2,4 +2,4 @@
 /bin/sh
 /bin/ash
 /bin/bash
-/usr/bin/autologin
+/bin/session

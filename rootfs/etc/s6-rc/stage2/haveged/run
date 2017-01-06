@@ -1,3 +1,0 @@
-#!/bin/sh
-cat /root/.rnd >/dev/urandom
-fdmove -c 2 1 exec /usr/sbin/haveged -F

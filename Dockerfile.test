@@ -2,4 +2,7 @@ FROM scratch
 
 ADD initrd/ /
 
-ENTRYPOINT ["/init"]
+WORKDIR /root
+
+#ENTRYPOINT ["/init"]
+ENTRYPOINT ["/bin/bash"]

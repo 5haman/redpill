@@ -1,0 +1,21 @@
+#!/bin/bash
+
+newroot=/lroot
+overlay=/troot
+
+nproc=$(cat /proc/cpuinfo | grep processor | wc -l)
+zdevice=$(zramctl -f -s $(free -m | awk '/Mem/ {print int($2*2)"M"}') -a lzo -t $nproc)
+
+modprobe zram num_devices=$(($(nproc)+2))
+
+cd /
+mkdir -p "$newroot" "$overlay/upper" "$overlay/work"
+
+mkfs.ext2 -q "$zdevice"
+mount "$zdevice" "$overlay"
+mount oroot -t overlay -o lowerdir=/lroot,upperdir=$overlay/upper,workdir=$overlay/work "$newroot"
+
+rsync -ax --delete --no-whole-file --inplace \
+      --exclude boot --exclude dev --exclude mnt --exclude proc \
+      --exclude run --exclude sys --exclude tmp \
+      "/" "$newroot"

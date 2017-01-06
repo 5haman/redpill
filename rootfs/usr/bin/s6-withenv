@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/bin/s6-envdir -fn -- /run/s6/env "$@"

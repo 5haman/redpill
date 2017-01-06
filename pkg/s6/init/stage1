@@ -1,0 +1,77 @@
+#!/bin/execlineb -S0
+
+/bin/export PATH "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+cd /
+
+# set environment
+if { s6-hiercopy /etc/s6/env /run/s6/env }
+s6-setsid -qb --
+umask 022
+emptyenv -p
+s6-envdir /run/s6/env
+
+# parse s6.conf and set environment
+background {
+    /bin/if { s6-test -e /etc/s6/s6.conf }
+    redirfd -r 0 /etc/s6/s6.conf
+    pipeline { s6-grep -vF -- "#" }
+    forstdin -nCd"\n" -- envvar
+    importas -ui -D "" envvar envvar
+    multidefine -d"=" $envvar { var value }
+    foreground {
+        redirfd -w 1 /run/s6/env/$var
+        s6-echo -n -- $value
+    }
+}
+
+# load modules
+background {
+    if { s6-test -e /run/s6/env/MODULES }
+    redirfd -r 0 /run/s6/env/MODULES
+    forstdin -n -- mod
+    importas -ui -D "" mod mod
+    modprobe -ab $mod
+}
+
+# mount filesystems
+foreground {
+    if { s6-mount -o remount,noatime,rw,size=256M / / }
+    if { s6-mount -wt proc -o noexec,nosuid,nodev,noatime proc /proc }
+    if { s6-mount -wt sysfs -o noexec,nosuid,nodev,noatime sys /sys }
+}
+
+# Copy service for pid1 at the right place
+foreground {
+    if { s6-hiercopy /etc/s6/stage1 /run/s6/service }
+}
+
+foreground {
+    if -nt { s6-test -e /run/utmp }
+    install -m0664 -o root -g utmp /dev/null /run/utmp
+}
+
+foreground {
+    if -nt { s6-test -e /var/log/wtmp }
+    install -m0664 -o root -g utmp /dev/null /var/log/wtmp
+}
+
+foreground {
+    if -nt { s6-test -e /var/log/lastlog }
+    install -m0600 -o root -g utmp /dev/null /var/log/lastlog
+}
+
+redirfd -r 0 /dev/null
+redirfd -wnb 1 /run/s6/service/s6-svscan-log/fifo
+
+# Now we are good for stage2, start it
+background {
+    s6-setsid --
+    redirfd -w 1 /run/s6/service/s6-svscan-log/fifo
+    fdmove -c 2 1
+    /etc/s6/init/stage2
+}
+
+unexport !
+fdmove -c 2 1
+s6-svscan -st0 /run/s6/service

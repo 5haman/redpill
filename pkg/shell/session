@@ -1,0 +1,31 @@
+#!/bin/bash
+
+function restore_session() {
+    CLIENTID="$1+`date +%S`"
+    tmux new-session -d -t $1 -s $CLIENTID \; set-option destroy-unattached \; attach-session -t $CLIENTID
+}
+
+function new_session() {
+    #env
+    cp -f /usr/lib/tmuxifier/layouts/login.session.sh /usr/lib/tmuxifier/layouts/${1}.session.sh
+    tmuxifier load-session $1
+    restore_session $1
+}
+
+eval "$(tmuxifier init -)"
+
+tmux_nb=$(tmux ls 2>&1 | grep "^$USER" | wc -l)
+
+if [[ "$tmux_nb" == "0" ]]; then
+    new_session $USER
+else
+    # Make sure we are not already in a tmux session
+    if [[ -z "$TMUX" ]]; then
+	restore_session $USER
+    else
+        bash -i
+    fi
+fi
+
+clear
+exit 0

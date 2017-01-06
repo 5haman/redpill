@@ -1,0 +1,6 @@
+#!/bin/execlineb -P
+fdmove -c 2 1
+foreground {
+	if { udevadm trigger --action=add --type=subsystems }
+	udevadm trigger --action=add --type=devices
+}

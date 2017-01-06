@@ -1,0 +1,13 @@
+kernel/drivers/ata
+kernel/drivers/block/zram
+kernel/drivers/dca
+kernel/drivers/dma
+kernel/drivers/md/bcache
+kernel/fs/cifs
+kernel/fs/ext2
+kernel/fs/mbcache.ko
+kernel/fs/nls/nls_utf8.ko
+kernel/fs/overlayfs
+kernel/fs/quota
+kernel/lib/crc16.ko
+kernel/lib/lzo

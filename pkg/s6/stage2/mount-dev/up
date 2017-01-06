@@ -1,0 +1,18 @@
+foreground {
+    if { s6-mount -t devtmpfs -o mode=0755,noatime,noexec,nosuid,size=2M dev /dev }
+    if { mkdir -p /dev/pts /dev/shm }
+    s6-mount -t devpts -o nosuid,noexec,noatime,gid=5,mode=620,ptmxmode=000 devpts /dev/pts
+    s6-mount -t tmpfs shm -o nosuid,nodev,noatime,noexec /dev/shm
+    if -t { grep -Fq hugetlbfs /proc/filesystems }
+    if -nt { mountpoint -q /dev/hugepages }
+    if { mkdir -p /dev/hugepages }
+    s6-mount -t hugetlbfs -o nosuid,nodev,noexec,noatime hugepages /dev/hugepages
+}
+
+foreground {
+    if { ln -s /proc/self/fd /dev/fd }
+    if { ln -s /proc/kcore /dev/core }
+    if { ln -s fd/0 /dev/stdin }
+    if { ln -s fd/1 /dev/stdout }
+    if { ln -s fd/2 /dev/stderr }
+}

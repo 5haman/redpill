@@ -1,3 +1,0 @@
-kernel/drivers/ata/ata_generic.ko
-kernel/fs/cifs
-kernel/fs/overlayfs

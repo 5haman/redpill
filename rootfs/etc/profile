@@ -1,0 +1,10 @@
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export HOME=$(cat /etc/passwd | grep "$(whoami)" | head -n 1 | awk -F: '{ print $6 }' | tr -d "\n")
+
+umask 022
+
+for script in /etc/profile.d/*.sh ; do
+    if [ -r $script ] ; then
+         . $script
+    fi
+done

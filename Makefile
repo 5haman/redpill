@@ -1,4 +1,4 @@
-NAME	  = hyperdock-build
+NAME	  = icon-build
 FULLNAME  = $(NAME):$(VERSION)
 VERSION   = $(shell cat version)
 DOCKER    = $(shell which docker)
@@ -16,20 +16,26 @@ build:
 		-t $(FULLNAME) .
 	$(DOCKER) run -it --rm \
 		-v $(PWD):$(SRC_DIR) \
-		$(FULLNAME)
-	ls -la install
-
-install:
-	mkdir -p $(HOME)/.hyperdock
-	cp -R install/* $(HOME)/.hyperdock
-
-www:
-	$(PYTHON) -m SimpleHTTPServer 8000
+		$(FULLNAME) -c "cd bin && ./setup_python.sh && ./make_iso.sh"
 
 test:
-	mv build/initrd initrd
-	$(DOCKER) build -t "$(FULLNAME)-test" -f Dockerfile.test .
-	mv initrd build/initrd
-	$(DOCKER) run -it --rm --privileged "$(FULLNAME)-test"
+	mv build/initrd .
+	$(DOCKER) build -t $(FULLNAME)-test -f Dockerfile.test .
+	mv initrd build
+	$(DOCKER) run -it --rm --privileged $(FULLNAME)-test
+
+www:
+	ls -la dist
+	cd dist && $(PYTHON) -m SimpleHTTPServer 8000
+
+box:
+	qemu-img convert -f raw -O qcow2 dist/iconlinux.iso dist/iconlinux.img
+	rm -rf $(HOME)/.iconlinux
+	mkdir $(HOME)/.iconlinux
+	cd dist && tar czf $(HOME)/.iconlinux/iconlinux.box metadata.json Vagrantfile iconlinux.img
+	vagrant box add iconlinux $(HOME)/.iconlinux/iconlinux.box --force --provider=libvirt
+	cd $(HOME)/.iconlinux \
+	&& vagrant init -m iconlinux  \
+	&& vagrant up --provider=libvirt
 
 .PHONY: build install
