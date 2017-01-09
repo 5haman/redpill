@@ -14,23 +14,17 @@ ADD rootfs/usr/bin/ /usr/bin/
 # Install packages for build container
 RUN apk-install -t .build-deps \
 	build-base binutils coreutils grep gcc git make \
-	cpio mkinitfs xorriso musl-dev xz syslinux \
+	cpio mkinitfs xorriso musl-dev xz syslinux musl-dev linux-headers \
 	perl sed installkernel gmp-dev bc mpfr-dev mpc1-dev \
     && apk-install -X http://dl-4.alpinelinux.org/alpine/edge/testing \
 	ocaml emacs
 
 # Install packages for rootfs
 RUN apk-install \
-	apk-tools bash ca-certificates coreutils curl dhcpcd rsync \
-        dropbear dropbear-ssh dropbear-scp dnsmasq kbd kbd-misc e2fsprogs \
-        htop iptraf-ng multitail ncurses-terminfo python3 tmux util-linux
+	apk-tools bash ca-certificates coreutils curl dhcpcd rsync rng-tools \
+        haveged dropbear dropbear-ssh dropbear-scp dnsmasq kbd kbd-misc e2fsprogs \
+        htop iptraf-ng multitail ncurses-terminfo python3 tmux util-linux squashfs-tools
 
-#    && cd /usr/lib \
-#    && rm -rf /usr/lib/libsqlite3* \
-#        /usr/lib/libbz2* \
-#        /usr/lib/engines \
-#        /usr/lib/libcrypto*
-
-WORKDIR "${SRC_DIR}"
+WORKDIR "${SRC_DIR}/bin"
 
 ENTRYPOINT ["/bin/bash"]

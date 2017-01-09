@@ -9,7 +9,8 @@ if initialize_session "$USER"; then
   # Load a defined window layout.
   load_window "top"
   load_window "log"
-  new_window "bash"
+  load_window "shell"
+  load_window "shell"
   select_window 1
 fi
 

@@ -1,6 +1,10 @@
-sysctl
-haveged
+mdev
 klogd
 syslogd
+sysctl
+rngd
+haveged
 crond
+dropbear
+console
 fifo-cleanup

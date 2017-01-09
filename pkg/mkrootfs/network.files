@@ -1,6 +1,9 @@
 /sbin/dhcpcd
+/sbin/iptraf-ng
+/usr/bin/curl
 /usr/bin/dropbearkey
 /usr/bin/scp
 /usr/bin/ssh
 /usr/lib/dhcpcd
+/usr/sbin/dnsmasq
 /usr/sbin/dropbear

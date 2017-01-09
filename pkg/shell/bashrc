@@ -1,6 +1,13 @@
 # If not running interactively, don't do anything
-[ -z "$PS1" ] && return
+if [ "$-" -ne "*i*" ]; then return; fi
 
+clear
+
+# Alias definitions.
+alias ll='ls -la'
+
+export EDITOR=vi
+export PAGER=less
 export PS1="\[\e[32;1m\][\[\e[m\]\[\e[31;1m\]\u\[\e[m\]\[\e[32;1m\]@\[\e[m\]\h\[\e[m\]: \[\e[m\]\[\e[36;1m\]\W\[\e[m\]\[\e[32;1m\]\[\e[m\]\[\e[31;1m \[\e[32;1m\]\A]\[\e[31;1m\]\]\\$\[\e[m\] "
 
 # don't put duplicate lines in the historyi
@@ -13,8 +20,4 @@ shopt -s histappend
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
-# Alias definitions.
-alias ll='ls -la'
-
-clear
-echo -e "$(cat /etc/motd)"
+echo -e "$(cat /etc/motd.custom)"

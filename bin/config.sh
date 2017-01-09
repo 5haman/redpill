@@ -1,5 +1,3 @@
-set -euo pipefail
-
 THREADS=$(cat /proc/cpuinfo | grep processor | wc -l)
 
 KERNELVERSION="4.4.39"
@@ -10,7 +8,8 @@ BUILD_DIR="$SRC_DIR/build"
 CONFIG_DIR="$SRC_DIR/pkg/shell"
 PKG_DIR="$SRC_DIR/pkg"
 ISO_DIR="$BUILD_DIR/iso"
-ROOT_DIR="$BUILD_DIR/initrd"
+ROOT_DIR="$BUILD_DIR/rootfs"
+INITRD_DIR="$BUILD_DIR/initrd"
 PY_DIR="/usr/lib/python3.5"
 
 DATA_DIR="$ROOT_DIR/data"

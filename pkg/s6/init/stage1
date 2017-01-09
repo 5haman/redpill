@@ -1,20 +1,14 @@
 #!/bin/execlineb -S0
 
-/bin/export PATH "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+/bin/export PATH "/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 cd /
 
-# set environment
-if { s6-hiercopy /etc/s6/env /run/s6/env }
-s6-setsid -qb --
-umask 022
-emptyenv -p
-s6-envdir /run/s6/env
-
-# parse s6.conf and set environment
+# parse and set environment
 background {
-    /bin/if { s6-test -e /etc/s6/s6.conf }
-    redirfd -r 0 /etc/s6/s6.conf
+    if { s6-mkdir -p /run/s6/env }
+    if { s6-test -e /etc/s6/env.conf }
+    redirfd -r 0 /etc/s6/env.conf
     pipeline { s6-grep -vF -- "#" }
     forstdin -nCd"\n" -- envvar
     importas -ui -D "" envvar envvar
@@ -25,40 +19,16 @@ background {
     }
 }
 
-# load modules
-background {
-    if { s6-test -e /run/s6/env/MODULES }
-    redirfd -r 0 /run/s6/env/MODULES
-    forstdin -n -- mod
-    importas -ui -D "" mod mod
-    modprobe -ab $mod
-}
-
-# mount filesystems
-foreground {
-    if { s6-mount -o remount,noatime,rw,size=256M / / }
-    if { s6-mount -wt proc -o noexec,nosuid,nodev,noatime proc /proc }
-    if { s6-mount -wt sysfs -o noexec,nosuid,nodev,noatime sys /sys }
-}
+# set environment
+s6-setsid -qb --
+umask 022
+emptyenv -p
+s6-envdir /run/s6/env
 
 # Copy service for pid1 at the right place
 foreground {
+    if { s6-mkdir -p /run/s6 }
     if { s6-hiercopy /etc/s6/stage1 /run/s6/service }
-}
-
-foreground {
-    if -nt { s6-test -e /run/utmp }
-    install -m0664 -o root -g utmp /dev/null /run/utmp
-}
-
-foreground {
-    if -nt { s6-test -e /var/log/wtmp }
-    install -m0664 -o root -g utmp /dev/null /var/log/wtmp
-}
-
-foreground {
-    if -nt { s6-test -e /var/log/lastlog }
-    install -m0600 -o root -g utmp /dev/null /var/log/lastlog
 }
 
 redirfd -r 0 /dev/null

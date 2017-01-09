@@ -1,5 +1,3 @@
 rc-fs
-rc-udev
 rc-local
 rc-net
-rc-service

@@ -1,4 +1,4 @@
-NAME	  = icon-build
+NAME	  = dockervm
 FULLNAME  = $(NAME):$(VERSION)
 VERSION   = $(shell cat version)
 DOCKER    = $(shell which docker)
@@ -16,7 +16,14 @@ build:
 		-t $(FULLNAME) .
 	$(DOCKER) run -it --rm \
 		-v $(PWD):$(SRC_DIR) \
-		$(FULLNAME) -c "cd bin && ./setup_python.sh && ./make_iso.sh"
+		-v $(PWD)/build/modules:/lib/modules \
+		-v $(PWD)/build/boot:/boot \
+		$(FULLNAME) -c "make dist"
+
+run:
+	$(DOCKER) run -it --rm \
+		-v $(PWD):$(SRC_DIR) \
+		$(FULLNAME)
 
 test:
 	mv build/initrd .

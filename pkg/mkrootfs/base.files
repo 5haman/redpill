@@ -1,0 +1,6 @@
+/etc/ssl/certs/ca-certificates.crt
+/bin/bash
+/sbin/apk
+/usr/bin/htop
+/usr/bin/tmux
+/usr/sbin/haveged

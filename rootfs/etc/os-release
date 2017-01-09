@@ -1,10 +1,6 @@
-NAME=Hyperdock
-VERSION={{VERSION}}
-ID=hyperdock
-ID_LIKE=alpine
+NAME=DockerVM
+ID=dockervm
 VERSION_ID={{VERSION}}
-PRETTY_NAME="Hyperdock {{VERSION}} (Alpine 3.5)"
-ANSI_COLOR="1;34"
-HOME_URL="https://github.com/5haman/hyperdock"
-SUPPORT_URL="https://github.com/5haman/hyperdock"
-BUG_REPORT_URL="https://github.com/5haman/hyperdock/issues"
+PRETTY_NAME="DockerVM {{VERSION}}"
+HOME_URL="https://github.com/5haman/dockervm"
+BUG_REPORT_URL="https://github.com/5haman/dockervm/issues"

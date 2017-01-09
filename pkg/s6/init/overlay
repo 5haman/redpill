@@ -1,0 +1,46 @@
+#!/bin/sh
+
+zcompr="lzo"
+newroot="/newroot"
+root_ro="/mnt/root-ro"
+root_rw="/mnt/root-rw"
+
+mount_overlay() {
+    mkdir -p "$1" "$root_rw/root" "$root_rw/work"
+    mkdir -p "$1/$root_rw/root" "$1/$root_rw/work"
+
+    mount -o remount,ro "$root_ro" "$root_ro"
+    mount -t overlay -o lowerdir=$root_ro,upperdir=$root_rw/root,workdir=$root_rw/work overlay "$1"
+    
+    cat /proc/mounts | while read DEV DIR TYPE OPTS ; do
+        if [ "$DIR" != "/" -a "$DIR" != "$1" -a -d "$DIR" ]; then
+            mkdir -p "$1/$DIR"
+            mount -o bind $DIR "$1/$DIR"
+        fi
+    done
+}
+
+mount_zram() {
+    echo $((128*1024*1024)) > /sys/block/zram0/disksize
+    echo $((128*1024*1024)) > /sys/block/zram1/disksize
+  
+    mkfs.ext2 -q /dev/zram0
+    mkfs.ext2 -q /dev/zram1
+    mount -t ext2 /dev/zram0 "$1"
+    mount -t ext2 -o noatime /dev/zram1 "$2"
+
+    find / | grep -vE "^/boot|^/proc|^/sys|^/tmp|^/newroot|^/mnt" | cpio -d -u -m -p "$1"
+    find / | grep -vE "^/dev|^/proc|^/sys|^/newroot|^/mnt|^/$" | cpio -d -u -m -p "$1"
+    mkdir -p "$1/dev" "$1/proc" "$1/sys"
+}
+
+cd /       
+mkdir -p "$newroot" "$root_ro" "$root_rw"
+
+modprobe zram num_devices=4
+mount_zram "$root_ro" "$root_rw"
+sync
+mount_overlay "$newroot"
+sync
+
+exit 0
