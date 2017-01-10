@@ -1,4 +1,4 @@
-# pkg: depcon
+# package: depcon
 
 pkgname=depcon
 pkgver=0.9.3
@@ -29,11 +29,11 @@ build() {
 package() {
     cd "$_builddir"
     if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
-	tmpdir=$(mktemp -d)
+        tmpdir=$(mktemp -d)
         mkdir -p "$tmpdir/usr/bin/"
         install -m755 $pkgname "$tmpdir/usr/bin/"
         cd $tmpdir
         find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-	rm -rf $tmpdir
+        rm -rf $tmpdir
     fi
 }

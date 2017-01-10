@@ -1,16 +1,12 @@
-# package: iptables
+# package: libevent
 
-pkgname=iptables
-pkgver=1.6.0
-pkgdesc="Linux kernel firewall, NAT and packet mangling tools"
-url="http://www.netfilter.org/projects/iptables/index.html"
-source="http://ftp.netfilter.org/pub/iptables/iptables-$pkgver.tar.bz2
-iptables-1.6.0-musl-fixes.patch"
+pkgname=libevent
+pkgver=2.0.22
+pkgdesc="An event notification and buffered network IO library"
+source="https://github.com/libevent/libevent/releases/download/release-$pkgver-stable/$pkgname-$pkgver-stable.tar.gz"
 
-_builddir="$srcdir"/$pkgname-$pkgver
-_buildflags="--prefix=/usr \
-             --mandir=/usr/share/man \
-             --disable-shared"
+_builddir="$srcdir/$pkgname-$pkgver"
+_buildflags="--disable-shared"
 
 download() {
     cd "$srcdir"
@@ -18,7 +14,7 @@ download() {
         local i
         for i in $source; do
             case $i in
-                *.tar.bz2) curl -sSL "$i" | tar xj -C "$srcdir";;
+                *.tar.gz) curl -sSL "$i" | tar xz -C "$srcdir";;
                 *.patch) cp "$workdir/$pkgname/$i" "$_builddir/$i";;
             esac
         done
@@ -37,9 +33,8 @@ prepare() {
 
 build() {
     cd "$_builddir"
-
     ./configure $_buildflags
-    make -j1
+    make -j"${threads}"
 }
 
 package() {
@@ -48,7 +43,6 @@ package() {
         tmpdir=$(mktemp -d)
         make -j1 install DESTDIR="$tmpdir" || return 1
         cd $tmpdir
-        sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
         find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
         rm -rf $tmpdir
     fi

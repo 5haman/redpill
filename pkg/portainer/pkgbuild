@@ -1,4 +1,4 @@
-# pkg: portainer
+# package: portainer
 
 pkgname=portainer
 pkgver=1.11.0
@@ -28,14 +28,14 @@ build() {
 
 package() {
     cd "$_builddir"
-    if [ ! -f "$pkgdir/$pkgname-$pkgver.pkg" ]; then
-	tmpdir=$(mktemp -d)
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
         mkdir -p "$tmpdir/usr/bin/" "$tmpdir/usr/share/$pkgname"
         install -m755 $pkgname "$tmpdir/usr/bin/"
-	install -d -m755 css fonts ico images js "$tmpdir/usr/share/$pkgname"
-	install -m644 index.html "$tmpdir/usr/share/$pkgname"
+        install -d -m755 css fonts ico images js "$tmpdir/usr/share/$pkgname"
+        install -m644 index.html "$tmpdir/usr/share/$pkgname"
         cd $tmpdir
         find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-	rm -rf $tmpdir
+        rm -rf $tmpdir
     fi
 }

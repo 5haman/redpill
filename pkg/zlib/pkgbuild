@@ -38,10 +38,12 @@ build() {
 
 package() {
     cd "$_builddir"
-    tmpdir=$(mktemp -d)
-    make -j1 install DESTDIR="$tmpdir" || return 1
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
+        make -j1 install DESTDIR="$tmpdir" || return 1
 
-    cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-    rm -rf $tmpdir
+        cd $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
 }

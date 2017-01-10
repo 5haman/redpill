@@ -1,4 +1,4 @@
-# pkg: bash
+# package: bash
 
 pkgname=bash
 pkgver=4.3
@@ -48,10 +48,12 @@ build() {
 
 package() {
     cd "$_builddir"
-    tmpdir=$(mktemp -d)
-    make -j1 install DESTDIR="$tmpdir" || return 1
-    cd $tmpdir
-    sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
-    find bin | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-    rm -rf $tmpdir
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
+        make -j1 install DESTDIR="$tmpdir" || return 1
+        cd $tmpdir
+        sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
+        find bin | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
 }

@@ -1,4 +1,4 @@
-# pkg: upx
+# package: upx
 
 pkgname=upx
 pkgver=3.91
@@ -25,9 +25,11 @@ build() {
 
 package() {
     cd "$_builddir"
-    tmpdir=$(mktemp -d)
-    make -j1 install DESTDIR="$tmpdir/usr/bin" || return 1
-    cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-    rm -rf $tmpdir
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
+        make -j1 install DESTDIR="$tmpdir/usr/bin" || return 1
+        cd $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
 }

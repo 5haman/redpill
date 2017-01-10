@@ -32,7 +32,7 @@ build() {
 
 package() {
     cd "$_builddir"
-    if [ ! -f "$pkgdir/$pkgname-$pkgver.pkg" ]; then
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
         tmpdir=$(mktemp -d)
         mkdir -p "$tmpdir/usr/bin/"
         install -m755 * "$tmpdir/usr/bin/"

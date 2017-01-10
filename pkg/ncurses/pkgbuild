@@ -1,16 +1,12 @@
-# pkg: ncurses
+# package: ncurses
 
 pkgname=ncurses
-pkgver=5.9
-pkgdesc="Console display library - ncurses5 compat"
-source="http://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.gz
-ncurses-5.9-gcc-5.patch
-ncurses-musl.patch"
-
+pkgver=6.0
+pkgdesc="GNU console display library"
+source="http://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.gz"
 _builddir="$srcdir/$pkgname-$pkgver"
-_buildflags="--prefix= --mandir=/share/man \
-    --without-shared --with-normal --without-debug --with-cxx --without-ada \
-    --enable-widec --enable-ext-colors --disable-ext-mouse --enable-overwrite \
+_buildflags="--prefix=/usr --without-cxx --without-cxx-bindings --enable-static \
+    --without-debug --without-ada --disable-ext-mouse --enable-overwrite \
     --disable-pc-files --without-progs"
 
 download() {
@@ -44,9 +40,11 @@ build() {
 
 package() {
     cd "$_builddir"
-    tmpdir=$(mktemp -d)
-    make -j1 install DESTDIR="$tmpdir" || return 1
-    cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-    rm -rf $tmpdir
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
+        make -j1 install DESTDIR="$tmpdir" || return 1
+        cd $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
 }

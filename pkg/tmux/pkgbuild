@@ -1,13 +1,13 @@
-# pkg: 
+# package: tmux
 
-pkgname=
-pkgver=
-pkgdesc=""
-url=""
-source=""
+pkgname=tmux
+pkgver=2.3
+pkgdesc="Tmux is a terminal multiplexer"
+url="https://tmux.github.io/"
+source="https://github.com/tmux/tmux/releases/download/$pkgver/$pkgname.tar.gz"
 
 _builddir="$srcdir"/$pkgname-$pkgver
-_buildflags="--enable-static-libc"
+_buildflags=""
 
 download() {
     cd "$srcdir"
@@ -31,9 +31,26 @@ build() {
     cd "$_builddir"
     ./configure "$_buildflags"
     make -j"${threads}"
+
+    cd "$_builddir"
+    ./configure --prefix=/usr CFLAGS="-I/usr/include -I/usr/include/ncurses" LDFLAGS="-static -L/usr/lib -L/usr/include/ncurses -L/usr/include"
+
+    env CPPFLAGS="-I/usr/include -I/usr/include/ncurses" \
+    LDFLAGS="-static -L/usr/lib -L/usr/include/ncurses -L/usr/include" \
+    make -j"${threads}"
 }
 
 package() {
     cd "$_builddir"
-    make -j1 install DESTDIR="$pkgdir" || return 1
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
+        make -j1 install DESTDIR="$tmpdir" || return 1
+
+        cd $tmpdir
+        # strip binary files
+        sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
+
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
 }

@@ -1,38 +1,39 @@
-# package: e2fsprogs
+# package: htop
 
-pkgname=e2fsprogs
-pkgver=1.43.3
-pkgdesc="Standard Ext2/3/4 filesystem utilities"
-url="http://e2fsprogs.sourceforge.net"
-source="https://www.kernel.org/pub/linux/kernel/people/tytso/$pkgname/v$pkgver/$pkgname-$pkgver.tar.xz"
+pkgname=htop
+pkgver=2.0.2
+pkgdesc="An interactive process viewer"
+url="http://hisham.hm/htop/"
+source="http://hisham.hm/htop/releases/$pkgver/$pkgname.tar.gz"
 
-_builddir="$srcdir/$pkgname-$pkgver"
-_buildflags="--mandir=/usr/share/man \
-             --disable-elf-shlibs \
-             --disable-tls \
-             --disable-nls"
+_builddir="$srcdir"/$pkgname-$pkgver
+_buildflags="--enable-static --disable-shared --disable-unicode --prefix=/usr"
 
 download() {
     cd "$srcdir"
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xJ -C "$srcdir"
+        curl -sSL "$source" | tar xz -C "$srcdir"
     fi
 }
 
 prepare() {
-    cd "$_builddir"
+cd "$_builddir"
     local i
     for i in $source; do
         case $i in
         *.patch) msg $i; patch -p1 -i "$srcdir"/$i || return 1;;
         esac
     done
+
 }
 
 build() {
     cd "$_builddir"
-    ./configure $_buildflags
-    make -j"${threads}" CFLAGS='-Os -pipe' LDFLAGS='-s -static'
+    export CFLAGS="-I/usr/include -I/usr/include/ncurses"
+    export CPPFLAGS="-I/usr/include -I/usr/include/ncurses"
+    export LDFLAGS="--static -lpthread -L/usr/lib -L/usr/include/ncurses -L/usr/include"
+    ./configure "$_buildflags"
+    make -j"${threads}"
 }
 
 package() {

@@ -1,8 +1,8 @@
-# pkg: s6
+# package: s6
 
 pkgname=s6
 pkgver=2.4.0.0
-pkgdesc="skarnet.org's small & secure supervision software suite."
+pkgdesc="skarnet.org's small & secure supervision software suite"
 url="http://skarnet.org/software/s6"
 source="http://skarnet.org/software/$pkgname/$pkgname-$pkgver.tar.gz"
 
@@ -30,18 +30,19 @@ build() {
     cd "$_builddir"
     ./configure $_buildflags
     make -j"${threads}"
-
 }
 
 package() {
     cd "$_builddir"
-    tmpdir=$(mktemp -d)
-    make -j1 install DESTDIR="$tmpdir" || return 1
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
+        make -j1 install DESTDIR="$tmpdir" || return 1
 
-    cd $tmpdir
-    # strip binary files
-    sh -c "find -type f | grep -v lib | xargs strip --strip-all &>/dev/null; exit 0"
+        cd $tmpdir
+        # strip binary files
+        sh -c "find -type f | grep -v lib | xargs strip --strip-all &>/dev/null; exit 0"
 
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-    rm -rf $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
 }

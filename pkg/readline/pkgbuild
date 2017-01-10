@@ -1,4 +1,4 @@
-# pkg: readline
+# package: readline
 
 pkgname=readline
 pkgver=6.3
@@ -6,7 +6,7 @@ pkgdesc="GNU readline library"
 source="http://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.gz"
 
 _builddir="$srcdir/$pkgname-$pkgver"
-_buildflags="--prefix= \
+_buildflags="--prefix=/usr \
     --disable-shared"
 
 download() {
@@ -40,9 +40,11 @@ build() {
 
 package() {
     cd "$_builddir"
-    tmpdir=$(mktemp -d)
-    make -j1 install DESTDIR="$tmpdir" || return 1
-    cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-    rm -rf $tmpdir
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
+        make -j1 install DESTDIR="$tmpdir" || return 1
+        cd $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
 }

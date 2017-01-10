@@ -1,13 +1,13 @@
-# pkg: 
+# package: tmuxifier
 
-pkgname=
-pkgver=
-pkgdesc=""
-url=""
-source=""
+pkgname=tmuxifier
+pkgver=0.12.2
+pkgdesc="Powerful session, window & pane management for Tmux"
+url="https://github.com/jimeh/tmuxifier"
+source="https://github.com/jimeh/$pkgname/archive/v$pkgver.tar.gz"
 
 _builddir="$srcdir"/$pkgname-$pkgver
-_buildflags="--enable-static-libc"
+_buildflags=""
 
 download() {
     cd "$srcdir"
@@ -17,23 +17,29 @@ download() {
 }
 
 prepare() {
-cd "$_builddir"
+    cd "$_builddir"
     local i
     for i in $source; do
         case $i in
         *.patch) msg $i; patch -p1 -i "$srcdir"/$i || return 1;;
         esac
     done
-
 }
 
 build() {
     cd "$_builddir"
-    ./configure "$_buildflags"
-    make -j"${threads}"
 }
 
 package() {
     cd "$_builddir"
-    make -j1 install DESTDIR="$pkgdir" || return 1
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
+        mkdir -p "$tmpdir/usr/lib/$pkgname"
+        install bin layouts lib libexec "$tmpdir/usr/lib/$pkgname"
+        install init.sh "$tmpdir/usr/lib/$pkgname"
+
+        cd $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
 }

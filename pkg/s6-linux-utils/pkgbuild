@@ -1,8 +1,8 @@
-# pkg: s6-linux-utils
+# package: s6-linux-utils
 
 pkgname=s6-linux-utils
 pkgver=2.2.0.0
-pkgdesc="A set of tiny Linux-specific utilities optimized for simplicity and small size."
+pkgdesc="A set of tiny Linux-specific utilities optimized for simplicity and small size"
 url="http://skarnet.org/software/s6-linux-utils/"
 source="http://skarnet.org/software/$pkgname/$pkgname-$pkgver.tar.gz"
 
@@ -34,13 +34,15 @@ build() {
 
 package() {
     cd "$_builddir"
-    tmpdir=$(mktemp -d)
-    make -j1 install DESTDIR="$tmpdir" || return 1
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
+        make -j1 install DESTDIR="$tmpdir" || return 1
 
-    cd $tmpdir
-    # strip binary files
-    sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
+        cd $tmpdir
+        # strip binary files
+        sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
 
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-    rm -rf $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
 }
