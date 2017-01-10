@@ -1,10 +1,10 @@
-# pkg: portainer
+# pkg: depcon
 
-pkgname=portainer
-pkgver=1.11.0
-pkgdesc="Portainer is a open-source lightweight management UI for Docker"
-url="http://portainer.io/"
-source="https://github.com/portainer/portainer/releases/download/$pkgver/$pkgname-$pkgver-linux-amd64.tar.gz"
+pkgname=depcon
+pkgver=0.9.3
+pkgdesc="Docker blue-green/deployment/management supporting Mesos/Marathon and Compose"
+url="http://depcon.containx.io/"
+source="https://github.com/ContainX/depcon/releases/download/v$pkgver/$pkgname_$pkgver_linux_amd64.tar.gz"
 
 _builddir="$srcdir"/$pkgname-$pkgver
 _buildflags=""
@@ -13,7 +13,7 @@ download() {
     cd "$srcdir"
     if [ ! -d "$_builddir" ]; then
         curl -sSL "$source" | tar xz -C "$srcdir"
-        mv $pkgname $pkgname-$pkgver
+        mv $pkgname_$pkgver_linux_amd64 $pkgname-$pkgver
     fi
 }
 
@@ -28,12 +28,10 @@ build() {
 
 package() {
     cd "$_builddir"
-    if [ ! -f "$pkgdir/$pkgname-$pkgver.pkg" ]; then
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
 	tmpdir=$(mktemp -d)
-        mkdir -p "$tmpdir/usr/bin/" "$tmpdir/usr/share/$pkgname"
+        mkdir -p "$tmpdir/usr/bin/"
         install -m755 $pkgname "$tmpdir/usr/bin/"
-	install -d -m755 css fonts ico images js "$tmpdir/usr/share/$pkgname"
-	install -m644 index.html "$tmpdir/usr/share/$pkgname"
         cd $tmpdir
         find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
 	rm -rf $tmpdir

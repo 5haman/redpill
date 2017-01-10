@@ -30,9 +30,6 @@ build() {
     cd "$_builddir"
     ./configure $_buildflags
     make -j"${threads}"
-
-    # strip binary files
-    sh -c "find -executable -type f | xargs strip --strip-all &>/dev/null; exit 0"
 }
 
 package() {
@@ -40,6 +37,6 @@ package() {
     tmpdir=$(mktemp -d)
     make -j1 install DESTDIR="$tmpdir" || return 1
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.pkg"
+    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
 }

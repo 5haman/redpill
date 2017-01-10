@@ -19,40 +19,6 @@ install_portainer() {
     cp -a $PKG_DIR/portainer/portainer.db $DATA_DIR
 }
 
-install_static() {
-    # execline
-    cd $BUILD_DIR/s6/skalibs
-    make install
-
-    # execline
-    cd $BUILD_DIR/s6/execline
-    make install
-    make DESTDIR=$ROOT_DIR install
-
-    # s6
-    cd $BUILD_DIR/s6/s6
-    make install
-    make DESTDIR=$ROOT_DIR install
-
-    # s6-linux-utils
-    cd $BUILD_DIR/s6/s6-linux-utils
-    make DESTDIR=$ROOT_DIR install
-
-    # s6-portable-utils
-    cd $BUILD_DIR/s6/s6-portable-utils
-    make DESTDIR=$ROOT_DIR install
-
-    cd $BUILD_DIR/s6/s6-rc
-    make DESTDIR=$ROOT_DIR install
-
-    cd $BUILD_DIR/dhcpcd
-    make DESTDIR=$ROOT_DIR install
-
-    cd $BUILD_DIR/e2fsprogs
-    make install
-    cp /sbin/mkfs.ext2 $ROOT_DIR/sbin
-}
-
 # make initial fs layout
 create_initrd() {
     mkdir -p $ROOT_DIR $ISO_DIR

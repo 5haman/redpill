@@ -33,7 +33,7 @@ package() {
         mkdir -p "$tmpdir/usr/bin/"
         install -m755 * "$tmpdir/usr/bin/"
         cd $tmpdir
-        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.pkg"
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
         rm -rf $tmpdir        
     fi
 }

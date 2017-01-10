@@ -1,13 +1,14 @@
-# pkg: s6-linux-utils
+# pkg:  
 
-pkgname=s6-linux-utils
-pkgver=2.2.0.0
-pkgdesc="A set of tiny Linux-specific utilities optimized for simplicity and small size."
-url="http://skarnet.org/software/s6-linux-utils/"
-source="http://skarnet.org/software/$pkgname/$pkgname-$pkgver.tar.gz"
+pkgname=
+pkgver=
+pkgdesc=""
+url=""
+source="$pkgname-$pkgver.tar.gz"
 
-_builddir="$srcdir"/$pkgname-$pkgver
-_buildflags="--enable-static-libc"
+_builddir="$srcdir/$pkgname-$pkgver"
+_buildflags="--disable-shared \
+             --enable-static"
 
 download() {
     cd "$srcdir"
@@ -21,15 +22,22 @@ prepare() {
     local i
     for i in $source; do
         case $i in
-        *.patch) msg $i; patch -p1 -i "$srcdir"/$i || return 1;;
+                *.tar.gz) curl -sSL "$i" | tar xz -C "$srcdir";;
+                *.tar.bz2) curl -sSL "$i" | tar xj -C "$srcdir";;
+                *.tar.xz) curl -sSL "$i" | tar xJ -C "$srcdir";;
+                *.patch) cp "$workdir/$pkgname/$i" "$_builddir/$i";;
         esac
     done
 }
 
 build() {
     cd "$_builddir"
+
+    #export CFLAGS="-Os -D_GNU_SOURCE"
+    #export LDFLAGS='-s'
     ./configure $_buildflags
-    make -j"${threads}"
+
+    make -j"${threads}" CFLAGS='-Os -pipe' LDFLAGS='-s -static'
 }
 
 package() {

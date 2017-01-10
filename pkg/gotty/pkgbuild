@@ -1,39 +1,43 @@
-# pkg: gotty
+# package: gotty
 
 pkgname=gotty
-pkgver=
-pkgdesc=""
+pkgver=master
+pkgdesc="GoTTY is a simple command line tool that turns your CLI tools into web applications"
 url="https://github.com/yudai/gotty/"
-source="https://github.com/yudai/gotty/releases/download/pre-release/$pkgname_linux_amd64.tar.gz"
+source="github.com/yudai/gotty"
 
 _builddir="$srcdir"/$pkgname-$pkgver
 _buildflags=""
+_gopath=/go
 
 download() {
-    cd "$srcdir"
-    if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xz -C "$srcdir"
+    if [ ! -d "$_gopath/src/$source" ]; then
+        git clone -b $pkgver --depth 1 "https://$source" "$_gopath/src/$source"
     fi
 }
 
 prepare() {
-cd "$_builddir"
-    local i
-    for i in $source; do
-        case $i in
-        *.patch) msg $i; patch -p1 -i "$srcdir"/$i || return 1;;
-        esac
-    done
-
+    cd "$_gopath/src/$source"
+    git submodule sync
+    git submodule update --init --recursive
 }
 
 build() {
-    cd "$_builddir"
-    ./configure "$_buildflags"
-    make -j"${threads}"
+    cd "$_gopath/src/$source"
+    export GOPATH=$_gopath
+    make tools
+    GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -buildmode=exe -o "$_builddir/gotty" .
+    strip --strip-all "$_builddir/gotty"
 }
 
 package() {
     cd "$_builddir"
-    make -j1 install DESTDIR="$pkgdir" || return 1
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.pkg" ]; then
+        tmpdir=$(mktemp -d)
+        mkdir -p "$tmpdir/usr/bin/"
+        install -m755 * "$tmpdir/usr/bin/"
+        cd $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
 }

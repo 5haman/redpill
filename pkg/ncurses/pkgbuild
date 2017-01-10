@@ -1,0 +1,52 @@
+# pkg: ncurses
+
+pkgname=ncurses
+pkgver=5.9
+pkgdesc="Console display library - ncurses5 compat"
+source="http://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.gz
+ncurses-5.9-gcc-5.patch
+ncurses-musl.patch"
+
+_builddir="$srcdir/$pkgname-$pkgver"
+_buildflags="--prefix= --mandir=/share/man \
+    --without-shared --with-normal --without-debug --with-cxx --without-ada \
+    --enable-widec --enable-ext-colors --disable-ext-mouse --enable-overwrite \
+    --disable-pc-files --without-progs"
+
+download() {
+    cd "$srcdir"
+    if [ ! -d "$_builddir" ]; then
+        local i
+        for i in $source; do
+            case $i in
+                *.tar.gz) curl -sSL "$i" | tar xz -C "$srcdir";;
+                *.patch) cp "$workdir/$pkgname/$i" "$_builddir/$i";;
+            esac
+        done
+    fi
+}
+
+prepare() {
+    cd "$_builddir"
+    local i
+    for i in $source; do
+        case $i in
+            *.patch) patch -p1 -i "$i" || return 1;;
+        esac
+    done
+}
+
+build() {
+    cd "$_builddir"
+    ./configure $_buildflags
+    make -j"${threads}"
+}
+
+package() {
+    cd "$_builddir"
+    tmpdir=$(mktemp -d)
+    make -j1 install DESTDIR="$tmpdir" || return 1
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+}

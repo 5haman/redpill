@@ -1,42 +1,57 @@
 # pkg: bash
 
 pkgname=bash
-pkgver=4.3.42
+pkgver=4.3
 pkgdesc="The GNU Bourne Again shell"
 url="http://www.gnu.org/software/bash/bash.html"
-source=""http://ftp.gnu.org/gnu/bash/bash-${_myver}.tar.gz
-bash-noinfo.patch
-privmode-setuid-fail.patch
-CVE-2016-7543.patch"
+source="http://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz"
 
-_builddir="$srcdir"/$pkgname-$pkgver
-_buildflags=""
+_builddir="$srcdir/$pkgname-$pkgver"
+_buildflags="--prefix= \
+        --enable-static-link \
+        --without-bash-malloc \
+        --enable-readline"
 
 download() {
     cd "$srcdir"
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xz -C "$srcdir"
+        local i
+        for i in $source; do
+            case $i in
+                *.tar.gz) curl -sSL "$i" | tar xz -C "$srcdir";;
+                *.patch) curl -sSL "http://git.alpinelinux.org/cgit/aports/plain/main/bash/$i" -o "$_builddir/$i";;
+            esac
+        done
     fi
 }
 
 prepare() {
-cd "$_builddir"
+    cd "$_builddir"
     local i
     for i in $source; do
         case $i in
-        *.patch) msg $i; patch -p1 -i "$srcdir"/$i || return 1;;
+        *.patch) patch -p0 -i "$i" || return 1;;
         esac
     done
-
 }
 
 build() {
     cd "$_builddir"
-    ./configure "$_buildflags"
-    make -j"${threads}"
+
+    CFLAGS="${CFLAGS} -DDEFAULT_PATH_VALUE='\"/bin\"'
+    -DSTANDARD_UTILS_PATH='\"/bin\"' -DSYS_BASH_LOGOUT='\"/etc/bash/bash_logout\"'
+    -DSYS_BASHRC='\"/etc/bash/bashrc\"'" \
+    ./configure $_buildflags
+
+    make -j${threads}
 }
 
 package() {
     cd "$_builddir"
-    make -j1 install DESTDIR="$pkgdir" || return 1
+    tmpdir=$(mktemp -d)
+    make -j1 install DESTDIR="$tmpdir" || return 1
+    cd $tmpdir
+    sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
+    find bin | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
 }

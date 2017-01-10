@@ -1,15 +1,15 @@
-# pkg:  
+# package: zlib
 
-pkgname=
-pkgver=
-pkgdesc=""
-source=""
+pkgname=zlib
+pkgver=1.2.10
+pkgdesc="A compression/decompression Library"
+url="http://zlib.net"
+source="http://zlib.net/$pkgname-$pkgver.tar.gz"
 
 _builddir="$srcdir/$pkgname-$pkgver"
-_buildflags="--mandir=/usr/share/man \
-             --disable-elf-shlibs \
-             --disable-tls \
-             --disable-nls"
+_buildflags="--prefix=/usr \
+             --libdir=/lib \
+             --static"
 
 download() {
     cd "$srcdir"
@@ -23,22 +23,25 @@ prepare() {
     local i
     for i in $source; do
         case $i in
-        *.patch) msg $i; patch -p1 -i "$srcdir"/$i || return 1;;
+                *.patch) cp "$workdir/$pkgname/$i" "$_builddir/$i";;
         esac
     done
 }
 
 build() {
     cd "$_builddir"
+
     ./configure $_buildflags
-    make -j"${threads}" CFLAGS='-Os -pipe' LDFLAGS='-s -static'
+
+    make -j"${threads}" CFLAGS='-O2'
 }
 
 package() {
     cd "$_builddir"
     tmpdir=$(mktemp -d)
     make -j1 install DESTDIR="$tmpdir" || return 1
+
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.pkg"
+    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
 }

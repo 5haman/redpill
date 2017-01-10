@@ -1,4 +1,5 @@
 threads=$(cat /proc/cpuinfo | grep processor | wc -l)
+pkgext=spk
 
 srcdir="$SRC_DIR/.build"
 workdir="$SRC_DIR/pkg"
