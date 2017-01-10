@@ -1,0 +1,39 @@
+# pkg: s6
+
+pkgname=skalibs
+pkgver=2.4.0.2
+pkgdesc="A set of general-purpose C programming libraries for skarnet.org software."
+url="http://skarnet.org/software/skalibs/"
+source="http://skarnet.org/software/$pkgname/$pkgname-$pkgver.tar.gz"
+
+_builddir="$srcdir"/$pkgname-$pkgver
+_buildflags="--enable-static-libc"
+
+download() {
+    cd "$srcdir"
+    if [ ! -d "$_builddir" ]; then
+        curl -sSL "$source" | tar xz -C "$srcdir"
+    fi
+}
+
+prepare() {
+cd "$_builddir"
+    local i
+    for i in $source; do
+        case $i in
+        *.patch) msg $i; patch -p1 -i "$srcdir"/$i || return 1;;
+        esac
+    done
+
+}
+
+build() {
+    cd "$_builddir"
+    ./configure "$_buildflags"
+    make -j"${threads}"
+}
+
+package() {
+    cd "$_builddir"
+    make -j1 install DESTDIR="$pkgdir" || return 1
+}

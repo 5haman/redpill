@@ -1,6 +1,0 @@
-/sbin/dhcpcd
-/usr/bin/dropbearkey
-/usr/bin/scp
-/usr/bin/ssh
-/usr/lib/dhcpcd
-/usr/sbin/dropbear

@@ -17,8 +17,7 @@ rootfs:
 	#$(RUN) py_cleanup
 	$(RUN) create_initrd
 	$(RUN) install_static
-	#$(RUN) create_root
-	#$(RUN) init_root 
+	$(RUN) init_root 
 	#$(RUN) install_docker
 	#$(RUN) install_portainer
 	#$(RUN) install_unison

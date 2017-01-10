@@ -1,6 +1,0 @@
-proc     /proc        proc     noexec,nosuid,nodev            0 0
-sysfs    /sys         sysfs    noexec,nosuid,nodev            0 0
-devtmpfs /dev         devtmpfs exec,nosuid,mode=0755,size=10M 0 0
-#mqueue   /dev/mqueue  mqueue   noexec,nosuid,nodev            0 0
-#devpts   /dev/pts     devpts   noexec,nosuid,gid=5,mode=0620  0 0
-#tmpfs    /dev/shm     shm      noexec,nosuid,nodev,mode=1777  0 0

@@ -1,5 +1,0 @@
-kernel/drivers/block/virtio*
-kernel/drivers/net/virtio_net*
-kernel/drivers/net/vmxnet3
-kernel/drivers/virtio
-kernel/virt/lib
