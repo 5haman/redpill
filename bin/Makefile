@@ -1,27 +1,32 @@
 BIN_DIR = /usr/src/bin
 RUN     = $(BIN_DIR)/run.sh
+PKG     = $(BIN_DIR)/pkg.sh
 
-default: dist
+default: all
 
-dist: deps rootfs iso
+all: pkg init dist
 
-deps:
-	$(RUN) download_e2fs
-	$(RUN) download_deps
-	$(RUN) download_s6
-	$(RUN) download_dhcpcd
-	$(RUN) build_kernel
+pkg:
+	$(PKG) -d -p e2fsprogs
+	$(PKG) skalibs
+	$(PKG) execline
+	$(PKG) s6
+	$(PKG) s6-linux-utils
+	$(PKG) s6-portable-utils
+	$(PKG) s6-rc
+	$(PKG) dhcpcd
+	$(PKG) linux
 	
-rootfs:
+init:
 	#$(RUN) py_install
 	#$(RUN) py_cleanup
 	$(RUN) create_initrd
-	$(RUN) install_static
+	#$(RUN) install_static
 	$(RUN) init_root 
 	#$(RUN) install_docker
 	#$(RUN) install_portainer
 	#$(RUN) install_unison
 
-iso:
+dist:
 	$(RUN) prepare_iso
 	$(RUN) make_iso

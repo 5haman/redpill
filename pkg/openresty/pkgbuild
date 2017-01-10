@@ -1,16 +1,13 @@
-# pkg: bash
+# pkg: 
 
-pkgname=bash
-pkgver=4.3.42
-pkgdesc="The GNU Bourne Again shell"
-url="http://www.gnu.org/software/bash/bash.html"
-source=""http://ftp.gnu.org/gnu/bash/bash-${_myver}.tar.gz
-bash-noinfo.patch
-privmode-setuid-fail.patch
-CVE-2016-7543.patch"
+pkgname=
+pkgver=
+pkgdesc=""
+url=""
+source=""
 
 _builddir="$srcdir"/$pkgname-$pkgver
-_buildflags=""
+_buildflags="--enable-static-libc"
 
 download() {
     cd "$srcdir"

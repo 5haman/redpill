@@ -1,39 +1,39 @@
-# pkg: 
+# pkg: docker
 
-pkgname=
-pkgver=
-pkgdesc=""
-url=""
-source=""
+pkgname=docker
+pkgver=1.12.5
+pkgdesc="Pack, ship and run any application as a lightweight container"
+url="https://docker.com/"
+source="https://get.docker.com/builds/Linux/x86_64/$pkgname-$pkgver.tgz"
 
 _builddir="$srcdir"/$pkgname-$pkgver
-_buildflags="--enable-static-libc"
+_buildflags=""
 
 download() {
     cd "$srcdir"
     if [ ! -d "$_builddir" ]; then
         curl -sSL "$source" | tar xz -C "$srcdir"
+        mv $pkgname $pkgname-$pkgver
     fi
 }
 
 prepare() {
-cd "$_builddir"
-    local i
-    for i in $source; do
-        case $i in
-        *.patch) msg $i; patch -p1 -i "$srcdir"/$i || return 1;;
-        esac
-    done
-
+    cd "$_builddir"
+    sh -c "strip --strip-all *; upx --best --ultra-brute *; exit 0"
 }
 
 build() {
     cd "$_builddir"
-    ./configure "$_buildflags"
-    make -j"${threads}"
 }
 
 package() {
     cd "$_builddir"
-    make -j1 install DESTDIR="$pkgdir" || return 1
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.pkg" ]; then
+        tmpdir=$(mktemp -d)
+        mkdir -p "$tmpdir/usr/bin/"
+        install -m755 * "$tmpdir/usr/bin/"
+        cd $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.pkg"
+        rm -rf $tmpdir        
+    fi
 }

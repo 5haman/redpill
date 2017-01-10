@@ -1,24 +1,22 @@
-# copy kernel with needed modules
-build_kernel() {
-    # Build kernel
-    cd ${BUILD_DIR}/linux
+# install gotty
+install_gotty() {
+    cp -a $BUILD_DIR/gotty $BIN_DIR
+}
 
-    if [ ! -f ${BUILD_DIR}/linux/vmlinux ]; then
-       cp -f $PKG_DIR/kernel/config.x86_64 ${BUILD_DIR}/linux/.config
-       cp -f $PKG_DIR/kernel/Makefile ${BUILD_DIR}/linux
-       echo "${KERNELVERSION}" > ${BUILD_DIR}/linux/include/config/kernel.release
-       export KERNELVERSION=${KERNELVERSION}
+# install unison
+install_unison() {
+    cp -a $BUILD_DIR/unison/src/unison \
+	  $BUILD_DIR/unison/src/unison-fsmonitor $BIN_DIR
+}
 
-       make -j${THREADS} silentoldconfig
-       make -j${THREADS} bzImage
-       make -j${THREADS} modules
-    fi
+install_portainer() {
+    # Install portainer
+    cp -f $PKG_DIR/portainer/images/logo.png $BUILD_DIR/portainer/images
+    cp -Ra $BUILD_DIR/portainer $LIB_DIR
+    mv $LIB_DIR/portainer/portainer $BIN_DIR
 
-    # Install kernel
-    mkdir -p /boot
-    rm -rf /lib/modules/*
-    make install
-    make modules_install
+    # portainer db
+    cp -a $PKG_DIR/portainer/portainer.db $DATA_DIR
 }
 
 install_static() {
@@ -72,7 +70,9 @@ create_initrd() {
 
     # install alpine base
     apk-install --initdb --root=$ROOT_DIR --allow-untrusted \
-	busybox-static
+	alpine-baselayout \
+	busybox-static \
+	busybox-initscripts
 
     # setup os-release
     sed -i "s#{{VERSION}}#${VERSION}#g" $ROOT_DIR/etc/os-release
@@ -86,27 +86,6 @@ create_initrd() {
     moddir="/lib/modules/$(ls /lib/modules)"
     cd $moddir
     cat $PKG_DIR/mkinitfs/base.modules | cpio -d -u -m -p "$ROOT_DIR/$moddir"
-}
-
-# make initial fs layout
-create_root() {
-   # create base rootfs from alpine
-    cp -f $PKG_DIR/mkrootfs/* /etc/mkinitfs/features.d/
-    mkinitfs -F "ata base network virtio" -k -t $ROOT_DIR "$(ls /lib/modules)"
-
-    # install alpine base
-    apk-install --initdb --root=$ROOT_DIR --allow-untrusted \
-        alpine-baselayout \
-	busybox \
-	busybox-initscripts \
-	busybox-suid \
-	iptables \
-	s6 \
-	s6-dns \
-	s6-rc \
-	s6-linux-utils \
-	s6-networking \
-	s6-portable-utils
 }
 
 init_root() {
@@ -136,35 +115,6 @@ init_root() {
     chroot $ROOT_DIR ln -s /etc/s6 /etc/s6-rc
     rm -rf $ROOT_DIR/var/run
     chroot $ROOT_DIR ln -s /run /var/run
-
-    # write rng start seed
-    #dd if=/dev/random of=$ROOT_DIR/var/lib/seed count=1 bs=4096
-}
-
-# install gotty
-install_gotty() {
-    cp -a $BUILD_DIR/gotty $BIN_DIR
-}
-
-# install unison
-install_unison() {
-    cp -a $BUILD_DIR/unison/src/unison \
-	  $BUILD_DIR/unison/src/unison-fsmonitor $BIN_DIR
-}
-
-# install docker
-install_docker() {
-    cp -a $BUILD_DIR/docker/* $BIN_DIR
-}
-
-install_portainer() {
-    # Install portainer
-    cp -f $PKG_DIR/portainer/images/logo.png $BUILD_DIR/portainer/images
-    cp -Ra $BUILD_DIR/portainer $LIB_DIR
-    mv $LIB_DIR/portainer/portainer $BIN_DIR
-
-    # portainer db
-    cp -a $PKG_DIR/portainer/portainer.db $DATA_DIR
 }
 
 prepare_iso() {
@@ -209,30 +159,4 @@ make_iso() {
 	-e /ramdisk.img \
 	-no-emul-boot -isohybrid-gpt-basdat \
 	-o "$SRC_DIR/dist/dockervm.iso" $ISO_DIR
-}
-
-py_install() {
-    pip3 install container-transform
-    
-    #cd $BUILD_DIR/docker-registry-ui
-    #pip3 install -r requirements.txt
-}
-
-py_cleanup() {
-    # cleanup
-    find $PY_DIR -type d | grep -E "test|pycache|info$" | xargs rm -rf
-    find $PY_DIR/encodings -type f | grep -vE "init|undef|unicode|alias|utf|latin" | xargs rm
-
-    cd $PY_DIR
-    rm -rf email config-3.5m ctypes/macholib distutils distutils/command/wininst-* \
-           ensurepip idlelib lib2to3 pydoc_data site-packages/pip* site-packages/setuptools* \
-           sqlite3 tkinter turtle* unittest venv wsgiref xml/dom \
-           multiprocessing xml site-packages/pkg_resources html xmlrpc
-       
-    cd $PY_DIR/lib-dynload
-    rm -f _codecs* _bz2* _lzma* _sqlite* audioop* ossaudiodev*
-}
-
-log() {
-    echo $'\e['"1;31m$(date "+%Y-%m-%d %H:%M:%S") [$(basename $0)] ${@}"$'\e[0m'
 }

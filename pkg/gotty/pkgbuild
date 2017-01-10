@@ -1,13 +1,10 @@
-# pkg: bash
+# pkg: gotty
 
-pkgname=bash
-pkgver=4.3.42
-pkgdesc="The GNU Bourne Again shell"
-url="http://www.gnu.org/software/bash/bash.html"
-source=""http://ftp.gnu.org/gnu/bash/bash-${_myver}.tar.gz
-bash-noinfo.patch
-privmode-setuid-fail.patch
-CVE-2016-7543.patch"
+pkgname=gotty
+pkgver=
+pkgdesc=""
+url="https://github.com/yudai/gotty/"
+source="https://github.com/yudai/gotty/releases/download/pre-release/$pkgname_linux_amd64.tar.gz"
 
 _builddir="$srcdir"/$pkgname-$pkgver
 _buildflags=""

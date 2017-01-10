@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+source "config.sh"
+source "utils.sh"
+
+for pkg in "$@"; do
+    source "$workdir/$pkg/pkgbuild"
+    if [ -f "$pkgdir/$pkgname-$pkgver.pkg" ]; then
+        log " => Installing '$pkgname-$pkgver.pkg'"
+        gunzip -cf "$pkgdir/$pkgname-$pkgver.pkg" | cpio -i -d -f -D /
+    else
+        log " => '$pkgname-$pkgver.pkg' not found, skipping"
+    fi
+done
+
+log " => Finished succesfully"

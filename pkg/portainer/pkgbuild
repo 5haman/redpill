@@ -1,39 +1,41 @@
-# pkg: 
+# pkg: portainer
 
-pkgname=
-pkgver=
-pkgdesc=""
-url=""
-source=""
+pkgname=portainer
+pkgver=1.11.0
+pkgdesc="Portainer is a open-source lightweight management UI for Docker"
+url="http://portainer.io/"
+source="https://github.com/portainer/portainer/releases/download/$pkgver/$pkgname-$pkgver-linux-amd64.tar.gz"
 
 _builddir="$srcdir"/$pkgname-$pkgver
-_buildflags="--enable-static-libc"
+_buildflags=""
 
 download() {
     cd "$srcdir"
     if [ ! -d "$_builddir" ]; then
         curl -sSL "$source" | tar xz -C "$srcdir"
+        mv $pkgname $pkgname-$pkgver
     fi
 }
 
 prepare() {
-cd "$_builddir"
-    local i
-    for i in $source; do
-        case $i in
-        *.patch) msg $i; patch -p1 -i "$srcdir"/$i || return 1;;
-        esac
-    done
-
+    cd "$_builddir"
+    sh -c "strip --strip-all $pkgname; upx --best --ultra-brute $pkgname; exit 0"
 }
 
 build() {
     cd "$_builddir"
-    ./configure "$_buildflags"
-    make -j"${threads}"
 }
 
 package() {
     cd "$_builddir"
-    make -j1 install DESTDIR="$pkgdir" || return 1
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.pkg" ]; then
+	tmpdir=$(mktemp -d)
+        mkdir -p "$tmpdir/usr/bin/" "$tmpdir/usr/share/$pkgname"
+        install -m755 $pkgname "$tmpdir/usr/bin/"
+	install -d -m755 css fonts ico images js "$tmpdir/usr/share/$pkgname"
+	install -m644 index.html "$tmpdir/usr/share/$pkgname"
+        cd $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.pkg"
+	rm -rf $tmpdir
+    fi
 }
