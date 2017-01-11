@@ -37,7 +37,7 @@ build() {
 
 package() {
     cd "$_builddir"
-    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+    if [ ! -f "$pkgcache/$pkgname-$pkgver.$pkgext" ]; then
         make -j1 install || return 1
         make -j1 modules_install || return 1
         tmpdir=$(mktemp -d)
@@ -45,7 +45,7 @@ package() {
         mkdir -p boot lib/modules
         mv /boot/vmlinuz boot
         #mv /lib/modules/
-        (find bin | cpio -o -H newc | gzip -9) > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        (find bin | cpio -o -H newc | gzip -9) > "$pkgcache/$pkgname-$pkgver.$pkgext"
         rm -rf $tmpdir
     fi
 }

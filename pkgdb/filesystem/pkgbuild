@@ -8,29 +8,22 @@ source="pkgsrc"
 
 _builddir="$srcdir/$pkgname-$pkgver"
 _mydir="$workdir/$pkgname"
-_buildflags=""
 
 download() {
-    cd "$srcdir"
     cp -Ra "$workdir/$pkgname/$source" "$_builddir"
 }
 
 prepare() {
-    cd "$_builddir"
-
     $_mydir/mkinitfs -b "$_builddir" -f "$_builddir/etc/fstab" -F "initrd" \
                      -t "$_builddir" -k -o /dev/null
                      
     # install busybox
     apk --initdb --no-cache --root="$_builddir" --allow-untrusted add busybox-static
-    return
     chroot "$_builddir" sh -c \
         "/bin/busybox.static mv /bin/busybox.static /bin/busybox && /bin/busybox --install -s"
 }
 
 build() {
-    cd "$_builddir"
-    return
     chroot "$_builddir" sh -c \
         "passwd root -d 'toor';
         addgroup -S docker;
@@ -48,11 +41,11 @@ build() {
 }
 
 package() {
-    cd "$_builddir"
     if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
         # setup os-release
         sed -i "s#{{VERSION}}#${VERSION}#g" "$_builddir/etc/os-release"
 
+        cd "$_builddir"
         find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
     fi
 }

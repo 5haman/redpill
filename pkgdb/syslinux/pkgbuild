@@ -1,40 +1,34 @@
-# package: XXX
+# package: syslinux
 
-pkgname=XXX
-pkgver=
+pkgname=syslinux
+pkgver=$version
 pkgdesc=""
 url=""
 source="$pkgname-$pkgver.tar.gz"
 
 _builddir="$srcdir/$pkgname-$pkgver"
-_buildflags="--disable-shared \
-             --enable-static"
 
 download() {
+    cp -Ra "$workdir/$pkgname/$source" "$_builddir"
     cd "$srcdir"
     if [ ! -d "$_builddir" ]; then
         curl -sSL "$source" | tar xz -C "$srcdir"
     fi
+    log " => $pkgname: download OK"
 }
 
 prepare() {
     cd "$_builddir"
-    local i
-    for i in $source; do
-        case $i in
-                *.patch) cp "$workdir/$pkgname/$i" "$_builddir/$i";;
-        esac
-    done
+    log " => $pkgname: prepare OK"
 }
 
 build() {
     cd "$_builddir"
 
-    #export CFLAGS="-Os -D_GNU_SOURCE"
-    #export LDFLAGS='-s'
     ./configure $_buildflags
 
     make -j"${threads}" CFLAGS='-Os -pipe' LDFLAGS='-s -static'
+    log " => $pkgname: build OK"
 }
 
 package() {
@@ -50,4 +44,5 @@ package() {
         find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
         rm -rf $tmpdir
     fi
+    log " => $pkgname: package OK"
 }

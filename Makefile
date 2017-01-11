@@ -3,8 +3,7 @@ VERSION       = 0.2
 KERNELVERSION = 4.4.39
 VOLUME        = /opt/build
 CACHE         = $(HOME)/.cache/dockervm
-DEBUG         = true
-#DEBUG         = false
+DEBUG         = false
 
 FULLNAME  = $(NAME):$(VERSION)
 DOCKER    = $(shell which docker)
