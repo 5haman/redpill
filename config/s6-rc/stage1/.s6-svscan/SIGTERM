@@ -1,0 +1,4 @@
+#!/bin/execlineb -P
+
+foreground { /etc/s6/init/stage2-finish }
+s6-svscanctl -t -- /run/s6/service

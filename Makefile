@@ -3,9 +3,12 @@ FULLNAME  = $(NAME):$(VERSION)
 VERSION   = $(shell cat version)
 DOCKER    = $(shell which docker)
 PYTHON    = $(shell which python)
+BLD       = $(shell which builder)
 SRC_DIR   = /usr/src
 
-default: build www
+default: all
+
+all: build dist www
 
 build:
 	mkdir -p .build
@@ -14,9 +17,17 @@ build:
 		--build-arg SRC_DIR=$(SRC_DIR) \
 		--build-arg VERSION=$(VERSION) \
 		-t $(FULLNAME) .
+
+dist:
 	$(DOCKER) run -it --rm \
 		-v $(PWD):$(SRC_DIR) \
-		$(FULLNAME) -c "make dist"
+		$(FULLNAME) -c "make iso"
+
+iso:
+	$(BLD) make_root
+	$(BLD) init_root
+	$(BLD) prepare_iso
+	$(BLD) make_iso
 
 run:
 	$(DOCKER) run -it --rm \
@@ -43,4 +54,4 @@ box:
 	&& vagrant init -m dockervm  \
 	&& vagrant up --provider=libvirt
 
-.PHONY: build install
+.PHONY: build install dist

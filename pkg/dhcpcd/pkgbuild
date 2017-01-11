@@ -10,7 +10,7 @@ _builddir="$srcdir/$pkgname-$pkgver"
 _buildflags="--sysconfdir=/etc \
              --mandir=/usr/share/man \
              --localstatedir=/var \
-             --libexecdir=/usr/lib/$pkgname \
+             --libexecdir=/usr/share/$pkgname \
              --dbdir=/var/lib/$pkgname"
 
 download() {

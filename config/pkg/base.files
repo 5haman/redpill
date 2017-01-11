@@ -1,0 +1,5 @@
+/etc/ssl/certs/ca-certificates.crt
+/usr/bin/dropbearkey
+/usr/bin/scp
+/usr/bin/ssh
+/usr/sbin/dropbear

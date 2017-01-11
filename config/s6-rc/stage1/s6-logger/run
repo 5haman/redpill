@@ -1,0 +1,8 @@
+#!/bin/execlineb -P
+
+redirfd -w 2 /dev/console
+fdmove -c 1 2
+redirfd -rnb 0 fifo
+umask 027
+s6-applyuidgid -u 0 -g 0 --
+s6-log -bp -- t /var/log/s6-logger

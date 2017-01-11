@@ -1,0 +1,7 @@
+foreground {
+    if { ln -s /proc/self/fd /dev/fd }
+    if { ln -s /proc/kcore /dev/core }
+    if { ln -s fd/0 /dev/stdin }
+    if { ln -s fd/1 /dev/stdout }
+    if { ln -s fd/2 /dev/stderr }
+}

@@ -34,9 +34,9 @@ package() {
     cd "$_builddir"
     if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
         tmpdir=$(mktemp -d)
-        mkdir -p "$tmpdir/usr/lib/$pkgname"
-        install bin layouts lib libexec "$tmpdir/usr/lib/$pkgname"
-        install init.sh "$tmpdir/usr/lib/$pkgname"
+        mkdir -p "$tmpdir/usr/share/$pkgname"
+        cp -Rf bin layouts lib libexec "$tmpdir/usr/share/$pkgname"
+        cp -f init.sh "$tmpdir/usr/share/$pkgname"
 
         cd $tmpdir
         find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"

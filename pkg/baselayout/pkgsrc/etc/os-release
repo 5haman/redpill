@@ -1,0 +1,6 @@
+NAME=DockerVM
+ID=dockervm
+VERSION_ID={{VERSION}}
+PRETTY_NAME="DockerVM {{VERSION}}"
+HOME_URL="https://github.com/5haman/dockervm"
+BUG_REPORT_URL="https://github.com/5haman/dockervm/issues"

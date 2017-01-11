@@ -4,7 +4,7 @@ pkgname=htop
 pkgver=2.0.2
 pkgdesc="An interactive process viewer"
 url="http://hisham.hm/htop/"
-source="http://hisham.hm/htop/releases/$pkgver/$pkgname.tar.gz"
+source="http://hisham.hm/htop/releases/$pkgver/$pkgname-$pkgver.tar.gz"
 
 _builddir="$srcdir"/$pkgname-$pkgver
 _buildflags="--enable-static --disable-shared --disable-unicode --prefix=/usr"
@@ -32,7 +32,7 @@ build() {
     export CFLAGS="-I/usr/include -I/usr/include/ncurses"
     export CPPFLAGS="-I/usr/include -I/usr/include/ncurses"
     export LDFLAGS="--static -lpthread -L/usr/lib -L/usr/include/ncurses -L/usr/include"
-    ./configure "$_buildflags"
+    ./configure $_buildflags
     make -j"${threads}"
 }
 

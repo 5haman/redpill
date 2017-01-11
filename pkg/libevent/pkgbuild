@@ -1,23 +1,17 @@
 # package: libevent
 
 pkgname=libevent
-pkgver=2.0.22
+pkgver=2.0.22-stable
 pkgdesc="An event notification and buffered network IO library"
-source="https://github.com/libevent/libevent/releases/download/release-$pkgver-stable/$pkgname-$pkgver-stable.tar.gz"
+source="https://github.com/libevent/libevent/releases/download/release-$pkgver/$pkgname-$pkgver.tar.gz"
 
 _builddir="$srcdir/$pkgname-$pkgver"
-_buildflags="--disable-shared"
+_buildflags="--prefix=/usr --disable-shared"
 
 download() {
     cd "$srcdir"
     if [ ! -d "$_builddir" ]; then
-        local i
-        for i in $source; do
-            case $i in
-                *.tar.gz) curl -sSL "$i" | tar xz -C "$srcdir";;
-                *.patch) cp "$workdir/$pkgname/$i" "$_builddir/$i";;
-            esac
-        done
+         curl -sSL "$source" | tar xz -C "$srcdir"
     fi
 }
 

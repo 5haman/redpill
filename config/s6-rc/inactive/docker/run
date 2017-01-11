@@ -1,0 +1,5 @@
+#!/bin/execlineb -P
+ulimit -n 1048576
+fdmove -c 2 1
+exec -c
+dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock -p /var/run/dockerd.pid

@@ -7,9 +7,12 @@ set -e
 
 threads=$(cat /proc/cpuinfo | grep processor | wc -l)
 pkgext=pkg
-srcdir="$SRC_DIR/.build"
+srcdir="/tmp/build"
 workdir="$SRC_DIR/pkg"
 pkgdir="$SRC_DIR/.cache"
+destdir="/"
+
+mkdir -p "$pkgdir" "$srcdir"
 
 build_spk() {
     source "$workdir/$1/pkgbuild"
@@ -26,8 +29,6 @@ build_spk() {
 }
 
 build_all() {
-    mkdir -p "$pkgdir"
-
     for spk in "$@"; do
         build_spk $spk
     done
@@ -41,7 +42,7 @@ install_spk() {
     fi
 
     log " => Installing '$pkgname-$pkgver.$pkgext'"
-    gunzip -cf "$pkgdir/$pkgname-$pkgver.$pkgext" | cpio -i -d -f -D /
+    gunzip -cf "$pkgdir/$pkgname-$pkgver.$pkgext" | cpio -i -d -f -D "$destdir"
 }
 
 install_all() {
@@ -55,22 +56,37 @@ log() {
 }
 
 usage() {
-    printf "Usage: $(basename "$0") [-v|-h] command [<package> ...]
+    printf "Usage: $(basename "$0") [-d|-h|-v] command [<package> ...]
 
 Options:
-  --version, -v - Print the version and exit
-  --help, -h    - Display CLI help (this output)
+  --dir,     -d <dir>   Destination directory for installation
+  --help,    -h         Display CLI help (this message)
+  --version, -v         Print the version and exit
 
 Commands:
-  build, b        Build static package(s)
-  install, i      Install static package(s)
+  build,   b            Build static package(s)
+  install, i            Install static package(s)
 "
 }
 
+set_dest() {
+    if [ -d "$1" ]; then
+         destdir=$1
+    else
+         log "$1: can't find destination directory, exiting!"
+         exit 1
+    fi
+}
+
 case "$1" in
-    --version|-v)         echo "$(basename $0): $_VERSION";;
-    --help|-h|help)       usage;;
-    install|i*)           shift; install_all "$@";;
-    build|b*)             shift; build_all "$@";;
-    *)                    usage; exit 1;;
+    --dir|-d)        set_dest $2; shift; shift;;
+    *)               ;;
+esac
+
+case "$1" in
+    --help|-h)       usage;;
+    --version|-v)    echo "$(basename $0): $_VERSION";;
+    install|i*)      shift; install_all "$@";;
+    build|b*)        shift; build_all "$@";;
+    *)               usage; exit 1;;
 esac

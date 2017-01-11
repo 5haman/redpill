@@ -18,12 +18,6 @@ download() {
 
 prepare() {
     cd "$_builddir"
-    local i
-    for i in $source; do
-        case $i in
-        *.patch) msg $i; patch -p1 -i "$srcdir"/$i || return 1;;
-        esac
-    done
     sed -i -e "s/GLIBC_SUPPORT_INOTIFY 0/GLIBC_SUPPORT_INOTIFY 1/" src/fsmonitor/linux/inotify_stubs.c
 }
 
@@ -33,10 +27,11 @@ build() {
 }
 
 package() {
-    cd "$_builddir"
+    cd "$_builddir/src"
     if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
         tmpdir=$(mktemp -d)
-        make -j1 install DESTDIR="$tmpdir" || return 1
+        mkdir -p "$tmpdir/usr/bin"
+        install unison unison-fsmonitor "$tmpdir/usr/bin"
 
         cd $tmpdir
         # strip binary files

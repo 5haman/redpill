@@ -4,7 +4,7 @@ pkgname=tmux
 pkgver=2.3
 pkgdesc="Tmux is a terminal multiplexer"
 url="https://tmux.github.io/"
-source="https://github.com/tmux/tmux/releases/download/$pkgver/$pkgname.tar.gz"
+source="https://github.com/tmux/tmux/releases/download/$pkgver/$pkgname-$pkgver.tar.gz"
 
 _builddir="$srcdir"/$pkgname-$pkgver
 _buildflags=""
@@ -28,15 +28,12 @@ cd "$_builddir"
 }
 
 build() {
-    cd "$_builddir"
-    ./configure "$_buildflags"
-    make -j"${threads}"
+    local dest_prefix=/usr
 
     cd "$_builddir"
-    ./configure --prefix=/usr CFLAGS="-I/usr/include -I/usr/include/ncurses" LDFLAGS="-static -L/usr/lib -L/usr/include/ncurses -L/usr/include"
+    ./configure --prefix=$dest_prefix CFLAGS="-I$dest_prefix/include -I$dest_prefix/include/ncurses" LDFLAGS="-static -L$dest_prefix/lib -L$dest_prefix/include/ncurses -L$dest_prefix/include" && \
+    env CPPFLAGS="-I$dest_prefix/include -I$dest_prefix/include/ncurses" LDFLAGS="-static -L$dest_prefix/lib -L$dest_prefix/include/ncurses -L$dest_prefix/include" make && \
 
-    env CPPFLAGS="-I/usr/include -I/usr/include/ncurses" \
-    LDFLAGS="-static -L/usr/lib -L/usr/include/ncurses -L/usr/include" \
     make -j"${threads}"
 }
 

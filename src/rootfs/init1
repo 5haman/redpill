@@ -1,4 +1,0 @@
-#!/bin/execlineb -S0
-exec -c
-/etc/s6/init/stage1
-/shutdown
