@@ -1,0 +1,12 @@
+\e[94m   ___                     __   ____  __ 
+\e[94m  |   \ ___  __ _ _ ___ _ _\ \ / /  \/  |
+\e[94m  |  ] \e[94m/ \e[93m_ \e[94m\/ \e[93m_\e[94m| / / -\e[93m_\e[94m) '\e[93m_\e[94m|\ V /| |\/| |
+\e[93m  |___/\___/\__|_\_\___|_|   \_/ |_|  |_|
+\e[37m
+           Welcome to \e[94mDocker\e[93mVM\e[37m!
+
+DockerVM provides integrated environment for Docker 
+development and deployment without unnecesary hassle.
+
+Have a nice day and greetings from Ukraine :)
+\e[0

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+usage() {
+    cat << EOF
+Usage: shutdown [OPTION]
+ -r, --reboot                  Reboot
+ -p, --poweroff                Poweroff
+EOF
+    exit 0
+}
+
+signal="${1}"
+if [ -z $signal ]; then
+    usage
+fi
+
+case "${signal}" in
+    -p|-P|--poweroff|-H|-h|--halt)
+        signal=SIGUSR2
+        ;;
+    -r|--reboot)
+        signal=SIGINT
+        ;;
+    *)
+       usage
+esac
+
+exec /run/s6/service/.s6-svscan/"${signal}"

@@ -1,108 +1,40 @@
 #!/usr/bin/env bash
 
-#set -euo pipefail
-set -x
+set -e
+[ "$debug" == "true" ] && set -x
 
-KERNELVERSION="4.4.39"
-BUILD_DIR="$SRC_DIR/.build"
-CONFIG_DIR="$SRC_DIR/config/session"
-PKG_DIR="$SRC_DIR/pkg"
-ISO_DIR="$BUILD_DIR/iso"
-ROOT_DIR="$BUILD_DIR/rootfs"
-DATA_DIR="$ROOT_DIR/data"
-BIN_DIR="$ROOT_DIR/usr/bin"
-LIB_DIR="$ROOT_DIR/usr/lib"
+buildroot=${buildroot:-/var/cache/pkg}
+buildcache=${buildcache:-$HOME/.cache/dockervm}
+rootfs="$buildcache/rootfs"
+isodir="$buildcache/iso"
 
-# make initial fs layout
-make_root() {
-    mkdir -p $ROOT_DIR $ISO_DIR
-    rm -rf   $ROOT_DIR/* $ISO_DIR/*
+mkdir -p "$rootfs" "$isodir"
+rm -rf "$rootfs/*" "$isodir/*"
 
-    # create base rootfs
-    pkg install -d $ROOT_DIR baselayout
+# install libraries to builder container which required for static builds
+pkgman install \
+	libevent libmnl libnftnl readline e2fsprogs \
+	libressl ncurses skalibs execline s6 zlib
+            
+# install main packages for stage1
+pkgman -d $rootfs install \
+	filesystem bash curl dhcpcd dropbear execline htop iptables linux \
+        s6 s6-linux-utils s6-portable-utils s6-rc tmux tmuxifier
 
-}
+# install bootloader
+pkgman -d $isodir install syslinux
 
-init_root() {
-    # add users
-    #chroot $ROOT_DIR addgroup -S docker
-    #chroot $ROOT_DIR addgroup -S dnsmasq
-    #chroot $ROOT_DIR adduser -S -D -H -h /dev/null -s /sbin/nologin -G  docker docker
-    #chroot $ROOT_DIR adduser -S -D -H -h /dev/null -s /sbin/nologin -G  dnsmasq dnsmasq
-    chroot $ROOT_DIR passwd root -d "toor"
+# create main sqashfs image
+#mksquashfs $rootfs $isodir/rootfs.img -b 1048576 -comp xz -Xdict-size 100%
 
-    install -m0664 -o root -g utmp /dev/null $ROOT_DIR/run/utmp
-    install -m0664 -o root -g utmp /dev/null $ROOT_DIR/var/log/wtmp
-    install -m0600 -o root -g utmp /dev/null $ROOT_DIR/var/log/lastlog
-
-    # copy config files
-    cp -Ra $PKG_DIR/s6 $ROOT_DIR/etc
-
-    # copy config files
-    cp -a $CONFIG_DIR/session $ROOT_DIR/bin
-    cp -a $CONFIG_DIR/bashrc $ROOT_DIR/root/.bashrc
-    cp -a $CONFIG_DIR/htoprc $ROOT_DIR/root/.htoprc
-    cp -a $CONFIG_DIR/tmux.conf $ROOT_DIR/root/.tmux.conf
-
-    cp -Ra $PKG_DIR/tmuxifier $ROOT_DIR/usr/lib
-    chroot $ROOT_DIR ln -s /usr/lib/tmuxifier/bin/tmuxifier /usr/bin/tmuxifier
-    
-    chroot $ROOT_DIR ln -s /etc/s6 /etc/s6-rc
-    rm -rf $ROOT_DIR/var/run
-    chroot $ROOT_DIR ln -s /run /var/run
-}
-
-prepare_iso() {
-    cd $ROOT_DIR
-    rm -rf usr/include var/cache/apk/* linuxrc etc/init.d etc/conf.d \
-	   media .modloop srv etc/mkinitfs etc/*.apk-new etc/opt \
-	   etc/sysctl.d etc/udhcpd.conf usr/local/share newroot etc/modules-load.d \
-	   etc/s6/inactive usr/lib/*
-
-    find $ROOT_DIR/etc -name "*-" | xargs rm -f
-    find $ROOT_DIR -name "*.a" | xargs rm -f
-
-    find $ROOT_DIR/usr/share -type d | grep -vE "share$|dhcpcd|fonts|keymaps" | xargs rm -rf
-
-    # strip binary files
-    bash -c "find $ROOT_DIR -type f | grep -v modules | xargs strip --strip-all &>/dev/null; exit 0"
-}
-
-# Generate final iso image
-make_iso() {
-    # create initrd image
-    cd $ROOT_DIR
-    find | cpio -o -H newc | xz --check=crc32 -9 -e --verbose > $ISO_DIR/ramdisk.img
-    
-    # create main sqashfs image
-    #mksquashfs $ROOT_DIR $ISO_DIR/rootfs.img -b 1048576 -comp xz -Xdict-size 100%
-
-    # copy linux kernel and bootloader stuff
-    cp -a /boot/vmlinuz $ISO_DIR/kernel
-    cp -Ra $PKG_DIR/syslinux $ISO_DIR/syslinux
-
-    # Builds an image that can be used as an ISO and a disk image
-    mkdir -p $SRC_DIR/dist
-    chown -R root:root $ROOT_DIR
-    xorriso -as mkisofs \
-	-publisher "DockerVM" \
+# Builds an image that can be used as an ISO and a disk image
+xorriso -as mkisofs \
+        -publisher "DockerVM" \
         -c syslinux/boot.cat \
-	-b syslinux/isolinux.bin \
-	-no-emul-boot -boot-load-size 4 -boot-info-table \
-	-isohybrid-mbr /usr/share/syslinux/isohdpfx.bin \
-	-eltorito-alt-boot \
-	-e /ramdisk.img \
-	-no-emul-boot -isohybrid-gpt-basdat \
-	-o "$SRC_DIR/dist/dockervm.iso" $ISO_DIR
-}
-
-log() {
-    echo $'\e['"1;31m$(date "+%Y-%m-%d %H:%M:%S") [$(basename $0)] ${@}"$'\e[0m'
-}
-
-## Main script
-
-for call in "$@"; do
-    log "Executing $call"
-    "$call"
-done
+        -b syslinux/isolinux.bin \
+        -no-emul-boot -boot-load-size 4 -boot-info-table \
+        -isohybrid-mbr syslinux/isohdpfx.bin \
+        -eltorito-alt-boot \
+        -e /ramdisk.img \
+        -no-emul-boot -isohybrid-gpt-basdat \
+        -o "$buildroot/dist/dockervm.iso" $isodir

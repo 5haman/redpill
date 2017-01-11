@@ -1,0 +1,10 @@
+proc      /proc          proc      noatime,noexec,nosuid,nodev                          0 0
+tmpfs     /run           run       noatime,nosuid,mode=0755,size=16M                    0 0
+tmpfs     /tmp           tmp       noatime,nodev,nosuid,mode=1777,size=16M              0 0
+sysfs     /sys           sysfs     noauto,noatime,noexec,nosuid,nodev                   0 0
+devtmpfs  /dev           devtmpfs  noauto,noatime,exec,nosuid,mode=0755,size=1M         0 0
+mqueue    /dev/mqueue    mqueue    noauto,noatime,noexec,nosuid,nodev                   0 0
+devpts    /dev/pts       devpts    noauto,noatime,noexec,nosuid,gid=5,mode=0620         0 0
+tmpfs     /dev/shm       shm       noauto,noatime,noexec,nosuid,nodev,mode=1777         0 0
+hugetlbfs /dev/hugepages hugepages noauto,noatime,nodev,noexec,nosuid                   0 0
+tmpfs     /sys/fs/cgroup cgroup    noauto,noatime,nodev,noexec,nosuid,mode=0755,size=1M 0 0

@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+
+set -e
+[ "$debug" == "true" ] && set -x
+
+buildroot=${buildroot:-/var/cache/pkg}
+buildcache=${buildcache:-$HOME/.cache/dockervm}
+pkgdir="$buildroot/pkgdb"
+pkgcache="$buildroot/pkgcache"
+
+threads=$(cat /proc/cpuinfo | grep processor | wc -l)
+pkgext=pkg
+
+mkdir -p "$pkgcache" "$pkgdir"
+
+build_pkg() {
+    pkgsrc="$pkgdir/$1/pkgsrc"
+    source "$pkgdir/$1/pkgbuild"
+    if [ ! -f "$pkgcache/$pkgname-$pkgver.$pkgext" ]; then
+        log " => Building '$pkgname-$pkgver.$pkgext'"
+        rm -rf "$pkgdir/$pkgname-$pkgver"
+        download
+        prepare
+        build
+        package
+    else
+        log " => '$pkgname-$pkgver.$pkgext' already exists, skipping"
+    fi
+}
+
+build_all() {
+    for pkg in "$@"; do
+        build_pkg $pkg
+    done
+}
+
+install_pkg() {
+    source "$pkgdir/$1/pkgbuild"
+    if [ ! -f "$pkgcache/$pkgname-$pkgver.$pkgext" ]; then
+        log " => '$pkgname-$pkgver.$pkgext' not found, trying to build now"
+        build_pkg $1
+    fi
+
+    log " => Installing '$pkgname-$pkgver.$pkgext'"
+    (gunzip -cf "$pkgcache/$pkgname-$pkgver.$pkgext" | cpio -i -d -f -D "$destdir") &>/dev/null
+    log " => Done"
+}
+
+install_all() {
+    for pkg in "$@"; do
+        install_pkg $pkg
+    done
+}
+
+log() {
+    echo $'\e['"1;31m$(date "+%Y-%m-%d %H:%M:%S") [$(basename $0)] ${@}"$'\e[0m'
+}
+
+usage() {
+    printf "Usage: $(basename "$0") [-d|-h|-v] command [<package> ...]
+
+Options:
+  --dir,     -d <dir>   Destination directory for installation
+  --help,    -h         Display CLI help (this message)
+  --version, -v         Print the version and exit
+
+Commands:
+  build,   b            Build static package(s)
+  install, i            Install static package(s)
+"
+}
+
+set_dest() {
+    if [ -d "$1" ]; then
+         destdir=$1
+    else
+         log "$1: can't find destination directory, exiting!"
+         exit 1
+    fi
+}
+
+# main script
+
+destdir="/"
+
+case "$1" in
+    --dir|-d)        set_dest $2; shift; shift;;
+    *)               ;;
+esac
+
+case "$1" in
+    --help|-h)       usage;;
+    --version|-v)    echo "$(basename $0): $ver";;
+    install|i*)      shift; install_all "$@";;
+    build|b*)        shift; build_all "$@";;
+    *)               usage; exit 1;;
+esac

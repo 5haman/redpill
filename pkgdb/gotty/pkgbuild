@@ -1,0 +1,43 @@
+# package: gotty
+
+pkgname=gotty
+pkgver=master
+pkgdesc="GoTTY is a simple command line tool that turns your CLI tools into web applications"
+url="https://github.com/yudai/gotty/"
+source="github.com/yudai/gotty"
+
+_builddir="$srcdir"/$pkgname-$pkgver
+_buildflags=""
+_gopath=/go
+
+download() {
+    if [ ! -d "$_gopath/src/$source" ]; then
+        git clone -b $pkgver --depth 1 "https://$source" "$_gopath/src/$source"
+    fi
+}
+
+prepare() {
+    cd "$_gopath/src/$source"
+    git submodule sync
+    git submodule update --init --recursive
+}
+
+build() {
+    cd "$_gopath/src/$source"
+    export GOPATH=$_gopath
+    make tools
+    GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -buildmode=exe -o "$_builddir/gotty" .
+    strip --strip-all "$_builddir/gotty"
+}
+
+package() {
+    cd "$_builddir"
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
+        mkdir -p "$tmpdir/usr/bin/"
+        install -m755 * "$tmpdir/usr/bin/"
+        cd $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
+}

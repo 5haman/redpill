@@ -1,44 +1,58 @@
-NAME	  = dockervm
+NAME	      = dockervm
+VERSION       = 0.2
+KERNELVERSION = 4.4.39
+VOLUME        = /opt/build
+CACHE         = $(HOME)/.cache/dockervm
+DEBUG         = true
+#DEBUG         = false
+
 FULLNAME  = $(NAME):$(VERSION)
-VERSION   = $(shell cat version)
 DOCKER    = $(shell which docker)
 PYTHON    = $(shell which python)
-BLD       = $(shell which builder)
-SRC_DIR   = /usr/src
 
 default: all
 
 all: build dist www
 
 build:
-	mkdir -p .build
-	chown -R root:root src/rootfs
 	$(DOCKER) build \
-		--build-arg SRC_DIR=$(SRC_DIR) \
-		--build-arg VERSION=$(VERSION) \
+		--build-arg buildroot=$(VOLUME) \
+		--build-arg buildcache=$(CACHE) \
+		--build-arg version=$(VERSION) \
+		--build-arg KERNELVERSION=$(KERNELVERSION) \
+		--build-arg debug=$(DEBUG) \
 		-t $(FULLNAME) .
 
 dist:
 	$(DOCKER) run -it --rm \
-		-v $(PWD):$(SRC_DIR) \
-		$(FULLNAME) -c "make iso"
+		-v $(CACHE):$(CACHE) \
+		-v $(PWD):$(VOLUME) \
+		-e KERNELVERSION=$(KERNELVERSION) \
+		-e buildroot=$(VOLUME) \
+	        -e buildcache=$(CACHE) \
+	        -e version=$(VERSION) \
+		-e debug=$(DEBUG) \
+		$(FULLNAME) builder
 
-iso:
-	$(BLD) make_root
-	$(BLD) init_root
-	$(BLD) prepare_iso
-	$(BLD) make_iso
+info:
+	@echo
+	@echo "Package cache: $(PWD)/pkgcache"
+	@ls -la "$(PWD)/pkgcache"
+	@echo
+	@echo "Build cache: $(CACHE)"
+	@ls -la "$(CACHE)"
+	@echo
 
 run:
 	$(DOCKER) run -it --rm \
-		-v $(PWD):$(SRC_DIR) \
+		-v $(PWD):$(VOLUME) \
 		$(FULLNAME)
 
 test:
 	mv .build/initrd .
 	$(DOCKER) build -t $(FULLNAME)-test -f Dockerfile.test .
 	mv initrd .build
-	$(DOCKER) run -it --rm --privileged $(FULLNAME)-test
+	$(DOCKER) run -it --rm $(FULLNAME)-test
 
 www:
 	ls -la dist

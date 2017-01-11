@@ -1,0 +1,4 @@
+#!/bin/execlineb -S0
+
+exec -c
+/run/s6/service/.s6-svscan/SIGUSR2

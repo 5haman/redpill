@@ -1,0 +1,11 @@
+libevent
+libmnl
+libnftnl
+readline
+e2fsprogs
+libressl
+ncurses
+skalibs
+execline
+s6
+zlib

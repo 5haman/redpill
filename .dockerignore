@@ -1,4 +1,6 @@
 .git
-.build
+docs
 dist
+pkgdb
+pkgcache
 vendor

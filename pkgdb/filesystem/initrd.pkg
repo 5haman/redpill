@@ -1,0 +1,13 @@
+bash
+curl
+dhcpcd
+dropbear
+execline
+htop
+iptables
+s6
+s6-rc
+s6-linux-utils
+s6-portable-utils
+tmux
+tmuxifier

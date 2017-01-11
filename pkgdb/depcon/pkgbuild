@@ -1,0 +1,39 @@
+# package: depcon
+
+pkgname=depcon
+pkgver=0.9.3
+pkgdesc="Docker blue-green/deployment/management supporting Mesos/Marathon and Compose"
+url="http://depcon.containx.io/"
+source="https://github.com/ContainX/depcon/releases/download/v$pkgver/$pkgname_$pkgver_linux_amd64.tar.gz"
+
+_builddir="$srcdir"/$pkgname-$pkgver
+_buildflags=""
+
+download() {
+    cd "$srcdir"
+    if [ ! -d "$_builddir" ]; then
+        curl -sSL "$source" | tar xz -C "$srcdir"
+        mv $pkgname_$pkgver_linux_amd64 $pkgname-$pkgver
+    fi
+}
+
+prepare() {
+    cd "$_builddir"
+    sh -c "strip --strip-all $pkgname; upx --best --ultra-brute $pkgname; exit 0"
+}
+
+build() {
+    cd "$_builddir"
+}
+
+package() {
+    cd "$_builddir"
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
+        mkdir -p "$tmpdir/usr/bin/"
+        install -m755 $pkgname "$tmpdir/usr/bin/"
+        cd $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
+}

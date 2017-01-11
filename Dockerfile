@@ -1,27 +1,56 @@
 FROM alpine:3.4
+MAINTAINER Sergey Shyman
 
-ARG VERSION
-ARG SRC_DIR
-ARG DOCKER_VERSION
+# Install builder packages
+RUN echo "http://dl-5.alpinelinux.org/alpine/v3.5/main" > /etc/apk/repositories \
+    && echo "http://dl-5.alpinelinux.org/alpine/v3.5/community" >> /etc/apk/repositories \
+    && echo "http://dl-4.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
+    && apk -U --no-cache add \
+		autoconf \
+		automake \
+		bash \
+		bc \
+		binutils \
+		bison \
+		bsd-compat-headers \
+		coreutils \
+		cpio \
+		curl \
+		emacs \
+		file \
+		flex \
+		g++ \
+		gcc \
+		git \
+		gmp-dev \
+		go \
+		grep \
+		libressl-dev \
+		linux-headers \
+		make \
+		mpc1-dev \
+		mpfr-dev \
+		musl-dev \
+		ncurses \
+		ocaml \
+		perl \
+		protobuf-dev \
+		sed \
+		syslinux \
+		xorriso \
+		xz
 
-ENV VERSION ${VERSION:-0.2}
-ENV SRC_DIR ${SRC_DIR:-/usr/src}
-
-ADD src/rootfs/etc/apk/repositories /etc/apk/repositories
-ADD src/rootfs/usr/bin/ /usr/bin/
-
-# Install packages for build container
-RUN apk-install -t .build-deps \
-	gcc musl-dev linux-headers bash file curl bsd-compat-headers \
-	autoconf automake protobuf-dev zlib-dev libressl-dev g++ \
-	binutils coreutils grep gcc git make go bison flex \
-	cpio xorriso xz syslinux musl-dev linux-headers ncurses \
-	perl sed installkernel gmp-dev bc mpfr-dev mpc1-dev \
-    && apk-install -X http://dl-4.alpinelinux.org/alpine/edge/testing \
-	ocaml emacs
+RUN curl -sSL https://github.com/lalyos/docker-upx/releases/download/v3.91/upx  -o /usr/bin/upx \
+    && chmod +x /usr/bin/upx
 
 COPY bin/* /usr/bin/
 
-WORKDIR "${SRC_DIR}"
+ARG version
+ARG buildroot
+ARG buildcache
+ARG debug
+ARG KERNELVERSION
 
-ENTRYPOINT ["/bin/bash"]
+WORKDIR "${buildroot}"
+
+ENTRYPOINT ["/usr/bin/entrypoint.sh"]

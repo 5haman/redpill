@@ -1,0 +1,49 @@
+# package: zlib
+
+pkgname=zlib
+pkgver=1.2.10
+pkgdesc="A compression/decompression Library"
+url="http://zlib.net"
+source="http://zlib.net/$pkgname-$pkgver.tar.gz"
+
+_builddir="$srcdir/$pkgname-$pkgver"
+_buildflags="--prefix=/usr \
+             --libdir=/lib \
+             --static"
+
+download() {
+    cd "$srcdir"
+    if [ ! -d "$_builddir" ]; then
+        curl -sSL "$source" | tar xz -C "$srcdir"
+    fi
+}
+
+prepare() {
+    cd "$_builddir"
+    local i
+    for i in $source; do
+        case $i in
+                *.patch) cp "$workdir/$pkgname/$i" "$_builddir/$i";;
+        esac
+    done
+}
+
+build() {
+    cd "$_builddir"
+
+    ./configure $_buildflags
+
+    make -j"${threads}" CFLAGS='-O2'
+}
+
+package() {
+    cd "$_builddir"
+    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+        tmpdir=$(mktemp -d)
+        make -j1 install DESTDIR="$tmpdir" || return 1
+
+        cd $tmpdir
+        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+        rm -rf $tmpdir
+    fi
+}

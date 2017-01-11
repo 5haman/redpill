@@ -1,0 +1,51 @@
+# package: libressl
+
+pkgname=libressl
+pkgver=2.4.4
+pkgdesc="Drop-in OpenSSL-replacement crypto library"
+url="https://www.libressl.org/"
+source="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/$pkgname-$pkgver.tar.gz"
+
+_builddir="$srcdir/$pkgname-$pkgver"
+_buildflags="--disable-shared \
+	--prefix=/usr \
+        --sysconfdir=/etc \
+        --mandir=/usr/share/man \
+        --localstatedir=/var"
+
+download() {
+    cd "$srcdir"
+    if [ ! -d "$_builddir" ]; then
+        curl -sSL "$source" | tar xz -C "$srcdir"
+    fi
+}
+
+prepare() {
+    cd "$_builddir"
+    local i
+    for i in $source; do
+        case $i in
+                *.patch) cp "$workdir/$pkgname/$i" "$_builddir/$i";;
+        esac
+    done
+}
+
+build() {
+    cd "$_builddir"
+
+    ./configure $_buildflags
+
+    make -j"${threads}"
+}
+
+package() {
+    cd "$_builddir"
+		if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
+		    tmpdir=$(mktemp -d)
+		    make -j1 install DESTDIR="$tmpdir" || return 1
+
+		    cd $tmpdir
+		    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+		    rm -rf $tmpdir
+		fi
+}
