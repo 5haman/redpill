@@ -13,26 +13,14 @@ _buildflags="--prefix= \
         --enable-readline"
 
 download() {
-    cd "$srcdir"
     if [ ! -d "$_builddir" ]; then
-        local i
-        for i in $source; do
-            case $i in
-                *.tar.gz) curl -sSL "$i" | tar xz -C "$srcdir";;
-                *.patch) curl -sSL "http://git.alpinelinux.org/cgit/aports/plain/main/bash/$i" -o "$_builddir/$i";;
-            esac
-        done
+        curl -sSL "$source" | tar xz -C "$srcdir"
     fi
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    cd "$_builddir"
-    local i
-    for i in $source; do
-        case $i in
-        *.patch) patch -p0 -i "$i" || return 1;;
-        esac
-    done
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 build() {
@@ -42,18 +30,16 @@ build() {
     -DSTANDARD_UTILS_PATH='\"/bin\"' -DSYS_BASH_LOGOUT='\"/etc/bash/bash_logout\"'
     -DSYS_BASHRC='\"/etc/bash/bashrc\"'" \
     ./configure $_buildflags
-
     make -j${threads}
+
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
-    cd "$_builddir"
-    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
-        tmpdir=$(mktemp -d)
-        make -j1 install DESTDIR="$tmpdir" || return 1
-        cd $tmpdir
-        sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
-        find bin | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-        rm -rf $tmpdir
-    fi
+    tmpdir=$(mktemp -d $pkgname.XXX)
+    make -j1 install DESTDIR="$tmpdir" || return 1
+    cd $tmpdir
+    find bin | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

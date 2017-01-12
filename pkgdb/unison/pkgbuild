@@ -7,37 +7,34 @@ url="https://www.cis.upenn.edu/~bcpierce/unison/"
 source="https://github.com/bcpierce00/unison/archive/$pkgver.tar.gz"
 
 _builddir="$srcdir/$pkgname-$pkgver"
-_buildflags=""
 
 download() {
-    cd "$srcdir"
     if [ ! -d "$_builddir" ]; then
         curl -sSL "$source" | tar xz -C "$srcdir"
     fi
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
     cd "$_builddir"
     sed -i -e "s/GLIBC_SUPPORT_INOTIFY 0/GLIBC_SUPPORT_INOTIFY 1/" src/fsmonitor/linux/inotify_stubs.c
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 build() {
     cd "$_builddir"
     make -j"${threads}"
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
     cd "$_builddir/src"
-    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
-        tmpdir=$(mktemp -d)
-        mkdir -p "$tmpdir/usr/bin"
-        install unison unison-fsmonitor "$tmpdir/usr/bin"
+    tmpdir=$(mktemp -d $pkgname.XXX)
+    mkdir -p "$tmpdir/usr/bin"
+    install unison unison-fsmonitor "$tmpdir/usr/bin"
 
-        cd $tmpdir
-        # strip binary files
-        sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
-
-        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-        rm -rf $tmpdir
-    fi
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

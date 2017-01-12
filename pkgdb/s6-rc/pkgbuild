@@ -10,42 +10,30 @@ _builddir="$srcdir"/$pkgname-$pkgver
 _buildflags="--enable-static-libc"
 
 download() {
-    cd "$srcdir"
     if [ ! -d "$_builddir" ]; then
         curl -sSL "$source" | tar xz -C "$srcdir"
     fi
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    cd "$_builddir"
-    local i
-    for i in $source; do
-        case $i in
-        *.patch) msg $i; patch -p1 -i "$srcdir"/$i || return 1;;
-        esac
-    done
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 build() {
     cd "$_builddir"
     ./configure $_buildflags
     make -j"${threads}"
-
-    # strip binary files
-    sh -c "find -executable -type f | xargs strip --strip-all &>/dev/null; exit 0"
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
     cd "$_builddir"
-    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
-        tmpdir=$(mktemp -d)
-        make -j1 install DESTDIR="$tmpdir" || return 1
+    tmpdir=$(mktemp -d $pkgname.XXX)
+    make -j1 install DESTDIR="$tmpdir" || return 1
 
-        cd $tmpdir
-        # strip binary files
-        sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
-
-        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-        rm -rf $tmpdir
-    fi
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

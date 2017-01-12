@@ -16,20 +16,14 @@ _buildflags="--prefix=/usr \
         --disable-shared"
 
 download() {
-    cd "$srcdir"
     if [ ! -d "$_builddir" ]; then
         curl -sSL "$source" | tar xj -C "$srcdir"
     fi
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    cd "$_builddir"
-    local i
-    for i in $source; do
-        case $i in
-            *.patch) patch -p1 -i "$i" || return 1;;
-        esac
-    done
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 build() {
@@ -39,16 +33,15 @@ build() {
     sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
     sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
     make -j1
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
     cd "$_builddir"
-    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
-        tmpdir=$(mktemp -d)
-        make -j1 install DESTDIR="$tmpdir" || return 1
-        cd $tmpdir
-        sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
-        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-        rm -rf $tmpdir
-    fi
+    tmpdir=$(mktemp -d $pkgname.XXX)
+    make -j1 install DESTDIR="$tmpdir" || return 1
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

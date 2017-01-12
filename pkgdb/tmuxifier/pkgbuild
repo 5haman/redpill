@@ -7,39 +7,31 @@ url="https://github.com/jimeh/tmuxifier"
 source="https://github.com/jimeh/$pkgname/archive/v$pkgver.tar.gz"
 
 _builddir="$srcdir"/$pkgname-$pkgver
-_buildflags=""
 
 download() {
-    cd "$srcdir"
     if [ ! -d "$_builddir" ]; then
         curl -sSL "$source" | tar xz -C "$srcdir"
     fi
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    cd "$_builddir"
-    local i
-    for i in $source; do
-        case $i in
-        *.patch) msg $i; patch -p1 -i "$srcdir"/$i || return 1;;
-        esac
-    done
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 build() {
-    cd "$_builddir"
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
     cd "$_builddir"
-    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
-        tmpdir=$(mktemp -d)
-        mkdir -p "$tmpdir/usr/share/$pkgname"
-        cp -Rf bin layouts lib libexec "$tmpdir/usr/share/$pkgname"
-        cp -f init.sh "$tmpdir/usr/share/$pkgname"
+    tmpdir=$(mktemp -d $pkgname.XXX)
+    mkdir -p "$tmpdir/usr/share/$pkgname"
+    cp -Rf bin layouts lib libexec "$tmpdir/usr/share/$pkgname"
+    cp -f init.sh "$tmpdir/usr/share/$pkgname"
 
-        cd $tmpdir
-        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-        rm -rf $tmpdir
-    fi
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

@@ -1,26 +1,27 @@
-# package: baselayout
+# package: filesystem
 
-pkgname=baselayout
-pkgver=0.1
+pkgname=filesystem
+pkgver=$version
 pkgdesc="Base root filesystem layout for DockerVM"
 url="https://github.com/5haman/dockervm"
 source="pkgsrc"
 
 _builddir="$srcdir/$pkgname-$pkgver"
-_mydir="$workdir/$pkgname"
 
 download() {
     cp -Ra "$workdir/$pkgname/$source" "$_builddir"
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
     $_mydir/mkinitfs -b "$_builddir" -f "$_builddir/etc/fstab" -F "initrd" \
                      -t "$_builddir" -k -o /dev/null
-                     
+
     # install busybox
     apk --initdb --no-cache --root="$_builddir" --allow-untrusted add busybox-static
     chroot "$_builddir" sh -c \
         "/bin/busybox.static mv /bin/busybox.static /bin/busybox && /bin/busybox --install -s"
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 build() {
@@ -33,19 +34,19 @@ build() {
         ln -s /etc/s6 /etc/s6-rc;
         rm -rf /var/run;
         ln -s /run /var/run"
-    
+
     #install -m0664 -o root -g utmp /dev/null "$_builddir/run/utmp"
     #install -m0664 -o root -g utmp /dev/null "$_builddir/var/log/wtmp"
     #install -m0600 -o root -g utmp /dev/null "$_builddir/var/log/lastlog"
 
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
-    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
-        # setup os-release
-        sed -i "s#{{VERSION}}#${VERSION}#g" "$_builddir/etc/os-release"
+    # setup os-release
+    sed -i "s#{{VERSION}}#${VERSION}#g" "$_builddir/etc/os-release"
 
-        cd "$_builddir"
-        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-    fi
+    cd "$_builddir"
+    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

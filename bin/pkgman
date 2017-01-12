@@ -11,7 +11,7 @@ pkgcache="$buildroot/pkgcache"
 threads=$(cat /proc/cpuinfo | grep processor | wc -l)
 pkgext=pkg
 
-mkdir -p "$pkgcache" "$pkgdir"
+mkdir -p "$pkgcache" "$pkgdir" "$buildcache"
 
 build_pkg() {
     pkgsrc="$pkgdir/$1/pkgsrc"
@@ -37,7 +37,7 @@ build_all() {
 install_pkg() {
     source "$pkgdir/$1/pkgbuild"
     if [ ! -f "$pkgcache/$pkgname-$pkgver.$pkgext" ]; then
-        log " => '$pkgname-$pkgver.$pkgext' not found, trying to build now"
+        log " => '$pkgname-$pkgver.$pkgext' not found, going to build now"
         build_pkg $1
     fi
 
@@ -57,7 +57,9 @@ log() {
 }
 
 usage() {
-    printf "Usage: $(basename "$0") [-d|-h|-v] command [<package> ...]
+    printf "DockerVM Package Manager (v$version)
+
+Usage: $(basename "$0") [-d|-h|-v] command [<package> ...]
 
 Options:
   --dir,     -d <dir>   Destination directory for installation
@@ -90,7 +92,7 @@ esac
 
 case "$1" in
     --help|-h)       usage;;
-    --version|-v)    echo "$(basename $0): $ver";;
+    --version|-v)    echo "$(basename $0): $version";;
     install|i*)      shift; install_all "$@";;
     build|b*)        shift; build_all "$@";;
     *)               usage; exit 1;;

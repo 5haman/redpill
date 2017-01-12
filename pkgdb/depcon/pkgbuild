@@ -7,7 +7,6 @@ url="http://depcon.containx.io/"
 source="https://github.com/ContainX/depcon/releases/download/v$pkgver/$pkgname_$pkgver_linux_amd64.tar.gz"
 
 _builddir="$srcdir"/$pkgname-$pkgver
-_buildflags=""
 
 download() {
     cd "$srcdir"
@@ -15,25 +14,26 @@ download() {
         curl -sSL "$source" | tar xz -C "$srcdir"
         mv $pkgname_$pkgver_linux_amd64 $pkgname-$pkgver
     fi
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    cd "$_builddir"
-    sh -c "strip --strip-all $pkgname; upx --best --ultra-brute $pkgname; exit 0"
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 build() {
     cd "$_builddir"
+    sh -c "strip --strip-all $pkgname; upx --best --ultra-brute $pkgname; exit 0"
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
     cd "$_builddir"
-    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
-        tmpdir=$(mktemp -d)
-        mkdir -p "$tmpdir/usr/bin/"
-        install -m755 $pkgname "$tmpdir/usr/bin/"
-        cd $tmpdir
-        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-        rm -rf $tmpdir
-    fi
+    tmpdir=$(mktemp -d $pkgname.XXX)
+    mkdir -p "$tmpdir/usr/bin/"
+    install -m755 $pkgname "$tmpdir/usr/bin/"
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

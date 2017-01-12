@@ -7,7 +7,6 @@ url="https://pf.natalenko.name/"
 source="https://github.com/pfactum/pf-kernel"
 
 _builddir="$buildcache/$pkgname-$KERNELVERSION"
-_buildflags=""
 
 download() {
     if [ ! -d "$_builddir" ]; then
@@ -16,11 +15,10 @@ download() {
 }
 
 prepare() {
-    cd "$_builddir"
-
     mkdir -p /boot
     rm -rf /lib/modules/*
 
+    cd "$_builddir"
     cp -f "$pkgsrc/config.x86_64" .config
     cp -f "$pkgsrc/Makefile" Makefile
 
@@ -29,7 +27,6 @@ prepare() {
 
 build() {
     cd "$_builddir"
-
     make -j$threads silentoldconfig || return 1
     make -j$threads bzImage || return 1
     make -j$threads modules || return 1
@@ -37,15 +34,15 @@ build() {
 
 package() {
     cd "$_builddir"
-    if [ ! -f "$pkgcache/$pkgname-$pkgver.$pkgext" ]; then
-        make -j1 install || return 1
-        make -j1 modules_install || return 1
-        tmpdir=$(mktemp -d)
-        cd $tmpdir
-        mkdir -p boot lib/modules
-        mv /boot/vmlinuz boot
-        #mv /lib/modules/
-        (find bin | cpio -o -H newc | gzip -9) > "$pkgcache/$pkgname-$pkgver.$pkgext"
-        rm -rf $tmpdir
-    fi
+    make -j1 install || return 1
+    make -j1 modules_install || return 1
+
+    tmpdir=$(mktemp -d $pkgname.XXX)
+    cd $tmpdir
+    mkdir -p boot lib/modules
+    mv /boot/vmlinuz boot
+    mv /lib/modules/* lib/modules
+
+    (find | cpio -o -H newc | gzip -9) > "$pkgcache/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
 }

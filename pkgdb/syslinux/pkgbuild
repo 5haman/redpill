@@ -10,39 +10,23 @@ _builddir="$srcdir/$pkgname-$pkgver"
 
 download() {
     cp -Ra "$workdir/$pkgname/$source" "$_builddir"
-    cd "$srcdir"
-    if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xz -C "$srcdir"
-    fi
-    log " => $pkgname: download OK"
 }
 
 prepare() {
-    cd "$_builddir"
-    log " => $pkgname: prepare OK"
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 build() {
-    cd "$_builddir"
-
-    ./configure $_buildflags
-
-    make -j"${threads}" CFLAGS='-Os -pipe' LDFLAGS='-s -static'
-    log " => $pkgname: build OK"
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
     cd "$_builddir"
-    if [ ! -f "$pkgdir/$pkgname-$pkgver.$pkgext" ]; then
-        tmpdir=$(mktemp -d)
-        make -j1 install DESTDIR="$tmpdir" || return 1
+    tmpdir=$(mktemp -d $pkgname.XXX)
+    make -j1 install DESTDIR="$tmpdir" || return 1
 
-        cd $tmpdir
-        # strip binary files
-        sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
-
-        find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
-        rm -rf $tmpdir
-    fi
-    log " => $pkgname: package OK"
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
