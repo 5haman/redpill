@@ -4,10 +4,10 @@ pkgname=filesystem
 pkgver=$version
 pkgdesc="Base root filesystem layout for DockerVM"
 url="https://github.com/5haman/dockervm"
-source="pkgsrc"
+source="$_srcdir/pkgsrc"
 
 download() {
-    cp -Ra "$workdir/$pkgname/$source" "$_builddir"
+    cp -Ra "$source" "$_builddir"
 }
 
 prepare() {

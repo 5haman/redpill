@@ -20,6 +20,7 @@ build_pkg() {
         log " => Building '$pkgname-$pkgver.$pkgext'"
         rm -rf "$buildcache/$pkgname-$pkgver"
         _builddir="$buildcache/$pkgname-$pkgver"
+        _srcdir="$pkgdir/$pkgname"
 
         download
         log " => '$pkgname-$pkgver.$pkgext' download OK"

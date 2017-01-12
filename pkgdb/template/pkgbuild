@@ -5,6 +5,7 @@ pkgver=
 pkgdesc=""
 url=""
 source="$pkgname-$pkgver.tar.gz"
+source="$_srcdir/pkgsrc"
 
 _builddir="$buildcache/$pkgname-$pkgver"
 _buildflags="--disable-shared \
@@ -21,7 +22,7 @@ prepare() {
     local i
     for i in $source; do
         case $i in
-                *.patch) cp "$workdir/$pkgname/$i" "$_builddir/$i";;
+                *.patch) cp "$i" "$_builddir/$i";;
         esac
     done
 }

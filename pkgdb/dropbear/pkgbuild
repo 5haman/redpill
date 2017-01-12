@@ -21,7 +21,7 @@ download() {
         for i in $source; do
             case $i in
                 *.tar.bz2) curl -sSL "$i" | tar xj -C "$buildcache";;
-                *.patch) cp "$workdir/$pkgname/patch/$i" "$_builddir/$i";;
+                *.patch) cp "$_srcdir/patch/$i" "$_builddir/$i";;
             esac
         done
     fi
