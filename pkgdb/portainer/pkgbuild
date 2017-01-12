@@ -24,7 +24,7 @@ build() {
 
 package() {
     cd "$_builddir"
-    tmpdir=$(mktemp -d $pkgname.XXX)
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
     mkdir -p "$tmpdir/usr/bin/" "$tmpdir/usr/share/$pkgname"
     install -m755 $pkgname "$tmpdir/usr/bin/"
     install -d -m755 css fonts ico images js "$tmpdir/usr/share/$pkgname"

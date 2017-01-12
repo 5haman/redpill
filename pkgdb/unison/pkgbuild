@@ -24,7 +24,7 @@ build() {
 
 package() {
     cd "$_builddir/src"
-    tmpdir=$(mktemp -d $pkgname.XXX)
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
     mkdir -p "$tmpdir/usr/bin"
     install unison unison-fsmonitor "$tmpdir/usr/bin"
 

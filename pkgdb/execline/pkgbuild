@@ -26,7 +26,7 @@ build() {
 
 package() {
     cd "$_builddir"
-    tmpdir=$(mktemp -d $pkgname.XXX)
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
     make -j1 install DESTDIR="$tmpdir" || return 1
 
     cd $tmpdir

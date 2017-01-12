@@ -37,7 +37,7 @@ package() {
     make -j1 install || return 1
     make -j1 modules_install || return 1
 
-    tmpdir=$(mktemp -d $pkgname.XXX)
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
     cd $tmpdir
     mkdir -p boot lib/modules
     mv /boot/vmlinuz boot

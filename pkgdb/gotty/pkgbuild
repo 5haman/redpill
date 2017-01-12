@@ -30,7 +30,7 @@ build() {
 
 package() {
     cd "$_builddir"
-    tmpdir=$(mktemp -d $pkgname.XXX)
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
     mkdir -p "$tmpdir/usr/bin/"
     install -m755 * "$tmpdir/usr/bin/"
     cd $tmpdir
