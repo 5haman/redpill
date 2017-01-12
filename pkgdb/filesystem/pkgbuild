@@ -12,9 +12,12 @@ download() {
 
 prepare() {
     # install busybox
-    apk --initdb --no-cache --root="$_builddir" --allow-untrusted add busybox-static
+    apk --initdb --no-cache --root="$_builddir" --allow-untrusted add \
+	busybox-static \
+	musl \
+	zlib
+
     chroot "$_builddir" /bin/busybox.static --install -s
-    chroot "$_builddir" rm -f /bin/busybox.static
 }
 
 build() {
@@ -28,11 +31,11 @@ build() {
         addgroup -S dnsmasq;
         adduser -S -D -H -h /dev/null -s /sbin/nologin -G  docker docker;
         adduser -S -D -H -h /dev/null -s /sbin/nologin -G  dnsmasq dnsmasq;
-        ln -s /etc/s6 /etc/s6-rc;
+        ln -sf /proc/mounts /etc/mtab;
+        ln -sf /etc/s6 /etc/s6-rc;
         rm -rf /var/run;
-        ln -s /run /var/run"
+        ln -sf /run /var/run"
 
-    install -m0664 -o root -g utmp /dev/null "$_builddir/run/utmp"
     install -m0664 -o root -g utmp /dev/null "$_builddir/var/log/wtmp"
     install -m0600 -o root -g utmp /dev/null "$_builddir/var/log/lastlog"
 }

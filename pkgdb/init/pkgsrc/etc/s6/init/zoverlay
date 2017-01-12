@@ -30,7 +30,7 @@ init_zram() {
     mount -t ext2 -o noatime /dev/zram2 "$root_rw"
 
     mkdir -p "$root_ro/dev" "$root_ro/proc" "$root_ro/sys" "$root_ro/tmp" "$root_ro/run"
-    find / | grep -vE "^/dev|^/proc|^/sys|^/newroot|^/run|^/tmp|^/mnt|^/$" | cpio -d -u -m -p "$root_ro"
+    (find / | grep -vE "^/dev|^/proc|^/sys|^/newroot|^/run|^/tmp|^/mnt|^/$" | cpio -d -u -m -p "$root_ro") &>/dev/null
 }
 
 init_zswap() {
@@ -40,6 +40,8 @@ init_zswap() {
 # main script
 cd /       
 mkdir -p "$newroot" "$root_ro" "$root_rw"
+
+modprobe -q zram num_devices=4
 
 init_zswap
 init_zram

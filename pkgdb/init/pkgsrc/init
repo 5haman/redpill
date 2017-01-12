@@ -20,7 +20,23 @@ foreground {
 }
 
 # mount filesystems
-if { s6-mount -a }
-if { /etc/s6/init/overlay }
+foreground {
+    if -nt { mountpoint -q /proc }
+    if { mount /proc }
+
+    if -nt { mountpoint -q /sys }
+    if { mount /sys }
+
+    if -nt { mountpoint -q /dev }
+    if { mount /dev }
+
+    if -nt { mountpoint -q /run }
+    if { mount /run }
+
+    if -nt { mountpoint -q /tmp }
+    if { mount /tmp }
+}
+
+if { /etc/s6/init/zoverlay }
 exec -c
 /bin/busybox switch_root /newroot /etc/s6/init/stage1

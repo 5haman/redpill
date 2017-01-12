@@ -6,8 +6,6 @@ pkgdesc="Linux kernel fork which provides a handful of awesome features not merg
 url="https://pf.natalenko.name/"
 source="https://github.com/pfactum/pf-kernel"
 
-_builddir="$buildcache/$pkgname-$KERNELVERSION"
-
 download() {
     if [ ! -d "$_builddir" ]; then
         git clone -b "$pkgver" --depth 1 "$source" "$_builddir"

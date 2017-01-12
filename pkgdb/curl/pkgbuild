@@ -11,11 +11,9 @@ _buildflags="--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
         --without-libidn \
         --without-libidn2 \
         --disable-ldap \
-				--enable-static \
-				--disable-shared \
-				--prefix=/usr \
-				CFLAGS=\"-I$lib_prefix/include\" \
-				LDFLAGS=\"--static -L$lib_prefix/lib -L$lib_prefix/include\"" 
+	--enable-static \
+	--disable-shared \
+	--prefix=/usr"
 
 download() {
     if [ ! -d "$_builddir" ]; then
@@ -29,6 +27,8 @@ prepare() {
 
 build() {
     cd "$_builddir"
+    CFLAGS='-static -static-libgcc' \
+    LDFLAGS='-static' \
     ./configure $_buildflags
     make -j"${threads}"
 }

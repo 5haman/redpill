@@ -11,7 +11,7 @@ PYTHON    = $(shell which python)
 
 default: all
 
-all: build dist www
+all: clean build dist www
 
 build:
 	$(DOCKER) build \
@@ -23,6 +23,7 @@ build:
 		-t $(FULLNAME) .
 
 dist:
+	rm -rf $(CACHE)/iso $(CACHE)/rootfs
 	$(DOCKER) run -it --rm \
 		-v $(CACHE):$(CACHE) \
 		-v $(PWD):$(VOLUME) \
@@ -44,8 +45,18 @@ info:
 
 run:
 	$(DOCKER) run -it --rm \
+		-v $(CACHE):$(CACHE) \
 		-v $(PWD):$(VOLUME) \
+		-e KERNELVERSION=$(KERNELVERSION) \
+		-e buildroot=$(VOLUME) \
+	        -e buildcache=$(CACHE) \
+	        -e version=$(VERSION) \
+		-e debug=$(DEBUG) \
 		$(FULLNAME)
+
+clean:
+	rm -f pkgcache/init-*.pkg
+	rm -f pkgcache/filesystem-*.pkg
 
 test:
 	mv .build/initrd .

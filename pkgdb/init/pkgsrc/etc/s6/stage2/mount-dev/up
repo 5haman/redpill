@@ -1,0 +1,34 @@
+# setup /dev
+foreground {
+    if -t { grep -Fq hugetlbfs /proc/filesystems }
+    if -nt { mountpoint -q /dev/hugepages }
+    if { mkdir -p /dev/hugepages }
+    mount /dev/hugepages
+}
+
+foreground {
+    if -t { grep -Fq mqueue /proc/filesystems }
+    if -nt { mountpoint -q /dev/mqueue }
+    if { mkdir -p /dev/mqueue }
+    mount /dev/mqueue
+}
+
+foreground {
+    if -nt { mountpoint -q /dev/pts }
+    if { mkdir -p /dev/pts }
+    mount /dev/pts
+}
+
+foreground {
+    if -nt { mountpoint -q /dev/shm }
+    if { mkdir -p /dev/shm }
+    mount /dev/shm
+}
+
+foreground {
+    if { ln -s /proc/self/fd /dev/fd }
+    if { ln -s /proc/kcore /dev/core }
+    if { ln -s fd/0 /dev/stdin }
+    if { ln -s fd/1 /dev/stdout }
+    if { ln -s fd/2 /dev/stderr }
+}

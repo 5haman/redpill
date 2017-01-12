@@ -1,8 +1,6 @@
 if -t { test -e /proc/cgroups }
-if {
-  if -nt { mountpoint -q /sys/fs/cgroup }
-  mount /sys/fs/cgroup
-}
+if -nt { mountpoint -q /sys/fs/cgroup }
+if { mount /sys/fs/cgroup }
 pipeline { sed -n "1d;s/^\\([[:alpha:]]\\{1,\\}\\)\\t.*\\t1$/\\1/p" /proc/cgroups }
 forstdin -p controller
 importas -u controller controller

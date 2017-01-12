@@ -6,6 +6,7 @@ RUN echo "http://dl-5.alpinelinux.org/alpine/v3.5/main" > /etc/apk/repositories 
     && echo "http://dl-5.alpinelinux.org/alpine/v3.5/community" >> /etc/apk/repositories \
     && echo "http://dl-4.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
     && apk -U --no-cache add \
+		argp-standalone \
 		autoconf \
 		automake \
 		bash \
@@ -13,6 +14,7 @@ RUN echo "http://dl-5.alpinelinux.org/alpine/v3.5/main" > /etc/apk/repositories 
 		binutils \
 		bison \
 		bsd-compat-headers \
+		busybox-initscripts \
 		coreutils \
 		cpio \
 		curl \
@@ -25,6 +27,8 @@ RUN echo "http://dl-5.alpinelinux.org/alpine/v3.5/main" > /etc/apk/repositories 
 		gmp-dev \
 		go \
 		grep \
+		kbd \
+		kbd-misc \
 		libressl-dev \
 		linux-headers \
 		make \
@@ -42,6 +46,8 @@ RUN echo "http://dl-5.alpinelinux.org/alpine/v3.5/main" > /etc/apk/repositories 
 
 RUN curl -sSL https://github.com/lalyos/docker-upx/releases/download/v3.91/upx  -o /usr/bin/upx \
     && chmod +x /usr/bin/upx
+
+RUN rm -f /usr/lib/libc.so
 
 COPY bin/* /usr/bin/
 

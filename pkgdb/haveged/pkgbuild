@@ -1,0 +1,39 @@
+# package: haveged
+
+pkgname=haveged
+pkgver=1.9.1
+pkgdesc="Entropy harvesting daemon using CPU timings"
+url="http://www.issihosts.com/haveged/"
+source="http://www.issihosts.com/haveged/$pkgname-$pkgver.tar.gz"
+
+_buildflags="--enable-static \
+             --disable-shared \
+             --prefix=/usr"
+
+download() {
+    if [ ! -d "$_builddir" ]; then
+        curl -sSL "$source" | tar xz -C "$buildcache"
+    fi
+}
+
+prepare() {
+    cd "$_builddir"
+}
+
+build() {
+    cd "$_builddir"
+    CFLAGS='-static -static-libgcc' \
+    LDFLAGS='-static' \
+    ./configure $_buildflags
+    make -j"${threads}" 
+}
+
+package() {
+    cd "$_builddir"
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
+    make -j1 install DESTDIR="$tmpdir" || return 1
+
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+}

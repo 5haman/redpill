@@ -19,19 +19,41 @@ pkgman install \
 
 # install main packages for stage1
 pkgman -d $rootfs install \
-		filesystem bash curl dhcpcd dropbear execline htop iptables \
-		s6 s6-linux-utils s6-portable-utils s6-rc tmux tmuxifier
+		filesystem bash curl dhcpcd dnsmasq dropbear execline haveged htop \
+		init iptables s6 s6-linux-utils s6-portable-utils s6-rc \
+		tmux tmuxifier
+
+chroot $rootfs bash -c "ln -sf /bin/busybox.static /bin/busybox"
+
+# manual copy of some binaries
+cp -af /sbin/mkfs.ext2 $rootfs/sbin
+rm $rootfs/usr/sbin/setfont
+cp -af /usr/sbin/setfont $rootfs/usr/sbin
+cp -af /usr/bin/loadkeys $rootfs/usr/bin
+
+mkdir -p $rootfs/usr/share/consolefonts $rootfs/usr/share/keymaps/i386/include
+cp -af /usr/share/consolefonts/UniCyrExt_8x16.psf.gz $rootfs/usr/share/consolefonts
+cp -af /usr/share/keymaps/i386/include/unicode.map.gz $rootfs/usr/share/keymaps/i386/include
+
+cp -af /etc/mdev.conf $rootfs/etc
+cp -Raf /lib/mdev $rootfs/lib
+
+# copy alpine keys
+#mkdir -p "$rootfs"/etc/apk/keys
+#cp "/etc/apk/keys/"* "$rootfs"/etc/apk/keys/
 
 # clean rootfs
 find $rootfs/etc -name "*-" | xargs rm -f
 find $rootfs/ -name "*.a" | xargs rm -f
 find $rootfs/usr/share -type d | grep -vE "share$|dhcpcd|fonts|keymaps|tmux" | xargs rm -rf
+#find $rootfs/usr/local -type f | xargs rm -f
 
 cd $rootfs
-rm -rf usr/include var/cache/apk/* linuxrc etc/init.d etc/conf.d \
+rm -rf usr/include linuxrc etc/init.d etc/conf.d \
 	   media .modloop srv etc/mkinitfs etc/*.apk-new etc/opt \
 	   etc/sysctl.d etc/udhcpd.conf usr/local/share etc/modules-load.d \
-	   etc/s6/inactive usr/lib/* boot/ lib/modules/*
+	   etc/s6/inactive usr/lib/* boot/ \
+	   sbin/apk.static.SIGN.* session usr/etc lib/apk etc/apk var/cache/apk
 
 # strip binary files
 bash -c "find $rootfs -type f | xargs strip --strip-all &>/dev/null; exit 0"
@@ -41,11 +63,7 @@ moddir="lib/modules/$KERNELVERSION"
 cd "/$moddir"
 mkdir -p "$rootfs/$moddir"
 cat "$buildroot/pkgdb/linux/pkgsrc/base.modules" | cpio -d -u -m -p "$rootfs/$moddir"
-#depmod -b "$rootfs" $KERNELVERSION
-
-# copy alpine keys
-mkdir -p "$rootfs"/etc/apk/keys
-cp "/etc/apk/keys/"* "$rootfs"/etc/apk/keys/
+depmod -b "$rootfs" $KERNELVERSION
 
 # create initrd image
 cd $rootfs
@@ -66,7 +84,7 @@ xorriso -as mkisofs \
         -c syslinux/boot.cat \
         -b syslinux/isolinux.bin \
         -no-emul-boot -boot-load-size 4 -boot-info-table \
-        -isohybrid-mbr syslinux/isohdpfx.bin \
+        -isohybrid-mbr /usr/share/syslinux/isohdpfx.bin \
         -eltorito-alt-boot \
         -e /ramdisk.img \
         -no-emul-boot -isohybrid-gpt-basdat \

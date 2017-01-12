@@ -1,5 +1,4 @@
-mount-tmp
-mount-sys
 mount-dev
+mount-sys
 mount-cgroups
 mount-swap

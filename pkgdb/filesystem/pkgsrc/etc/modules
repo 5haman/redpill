@@ -1,4 +1,0 @@
-zram num_devices=4
-overlay
-ext2
-loop
