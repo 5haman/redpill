@@ -2,14 +2,14 @@
 
 pkgname=dropbear
 pkgver=2016.74
-pkgdesc="small SSH 2 client/server designed for small memory environments"
+pkgdesc="Small SSH 2 client/server designed for small memory environments"
 url="http://matt.ucc.asn.au/dropbear/dropbear.html"
 source="http://matt.ucc.asn.au/dropbear/releases/${pkgname}-${pkgver}.tar.bz2
         dropbear-0.53.1-static_build_fix.patch
         dropbear-options_sftp-server_path.patch"
 
 _progs="dropbear dropbearkey dbclient dropbearconvert scp"
-_builddir="$srcdir/$pkgname-$pkgver"
+
 _buildflags="--prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info \
              --enable-shadow --disable-pam --enable-largefiles --with-zlib \
              --disable-lastlog --disable-utmp --disable-utmpx --disable-wtmp --disable-wtmpx \
@@ -20,12 +20,11 @@ download() {
         local i
         for i in $source; do
             case $i in
-                *.tar.bz2) curl -sSL "$i" | tar xj -C "$srcdir";;
+                *.tar.bz2) curl -sSL "$i" | tar xj -C "$buildcache";;
                 *.patch) cp "$workdir/$pkgname/patch/$i" "$_builddir/$i";;
             esac
         done
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
@@ -36,14 +35,12 @@ prepare() {
             *.patch) patch -p1 -i "$i" || return 1;;
         esac
     done
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 build() {
     cd "$_builddir"
     ./configure $_buildflags
     make -j"${threads}" PROGRAMS="$_progs" STATIC=1
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
@@ -55,7 +52,6 @@ package() {
     ln -s dbclient ssh
 
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

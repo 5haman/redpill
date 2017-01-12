@@ -13,7 +13,7 @@ download() {
         git clone -b "$pkgver" --depth 1 "$source" "$_builddir"
     fi
 }
-
+ 
 prepare() {
     mkdir -p /boot
     rm -rf /lib/modules/*

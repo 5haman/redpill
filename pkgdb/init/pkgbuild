@@ -2,23 +2,21 @@
 
 pkgname=init
 pkgver=$version
-pkgdesc=""
-url=""
-source="$pkgname-$pkgver.tar.gz"
+pkgdesc="S6 init and runlevels management system for DockerVM"
+url="https://github.com/5haman/dockervm"
+source="pkgsrc"
 
-_builddir="$srcdir/$pkgname-$pkgver"
 
 download() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+		echo
 }
 
 prepare() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+		echo
 }
 
 build() {
     cd "$_builddir"
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
@@ -27,7 +25,6 @@ package() {
     make -j1 install DESTDIR="$tmpdir" || return 1
 
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

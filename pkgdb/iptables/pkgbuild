@@ -6,7 +6,6 @@ pkgdesc="Linux kernel firewall, NAT and packet mangling tools"
 url="http://www.netfilter.org/projects/iptables/index.html"
 source="http://ftp.netfilter.org/pub/iptables/$pkgname-$pkgver.tar.bz2"
 
-_builddir="$srcdir"/$pkgname-$pkgver
 _buildflags="--prefix=/usr \
         --mandir=/usr/share/man \
         --sbindir=/sbin \
@@ -17,13 +16,12 @@ _buildflags="--prefix=/usr \
 
 download() {
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xj -C "$srcdir"
+        curl -sSL "$source" | tar xj -C "$buildcache"
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+    echo
 }
 
 build() {
@@ -33,7 +31,6 @@ build() {
     sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
     sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
     make -j1
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
@@ -41,7 +38,6 @@ package() {
     tmpdir=$(mktemp -d $pkgname.XXX)
     make -j1 install DESTDIR="$tmpdir" || return 1
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

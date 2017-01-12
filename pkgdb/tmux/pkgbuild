@@ -6,17 +6,14 @@ pkgdesc="Tmux is a terminal multiplexer"
 url="https://tmux.github.io/"
 source="https://github.com/tmux/tmux/releases/download/$pkgver/$pkgname-$pkgver.tar.gz"
 
-_builddir="$srcdir"/$pkgname-$pkgver
-
 download() {
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xz -C "$srcdir"
+        curl -sSL "$source" | tar xz -C "$buildcache"
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+    echo
 }
 
 build() {
@@ -27,7 +24,6 @@ build() {
     env CPPFLAGS="-I$dest_prefix/include -I$dest_prefix/include/ncurses" LDFLAGS="-static -L$dest_prefix/lib -L$dest_prefix/include/ncurses -L$dest_prefix/include" make && \
 
     make -j"${threads}"
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
@@ -36,7 +32,6 @@ package() {
     make -j1 install DESTDIR="$tmpdir" || return 1
 
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

@@ -6,25 +6,20 @@ pkgdesc="Unison is a file-synchronization tool for OSX, Unix, and Windows"
 url="https://www.cis.upenn.edu/~bcpierce/unison/"
 source="https://github.com/bcpierce00/unison/archive/$pkgver.tar.gz"
 
-_builddir="$srcdir/$pkgname-$pkgver"
-
 download() {
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xz -C "$srcdir"
+        curl -sSL "$source" | tar xz -C "$buildcache"
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
     cd "$_builddir"
     sed -i -e "s/GLIBC_SUPPORT_INOTIFY 0/GLIBC_SUPPORT_INOTIFY 1/" src/fsmonitor/linux/inotify_stubs.c
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 build() {
     cd "$_builddir"
     make -j"${threads}"
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
@@ -34,7 +29,6 @@ package() {
     install unison unison-fsmonitor "$tmpdir/usr/bin"
 
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

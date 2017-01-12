@@ -6,18 +6,16 @@ pkgdesc="An interactive process viewer"
 url="http://hisham.hm/htop/"
 source="http://hisham.hm/htop/releases/$pkgver/$pkgname-$pkgver.tar.gz"
 
-_builddir="$srcdir"/$pkgname-$pkgver
 _buildflags="--enable-static --disable-shared --disable-unicode --prefix=/usr"
 
 download() {
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xz -C "$srcdir"
+        curl -sSL "$source" | tar xz -C "$buildcache"
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+		echo
 }
 
 build() {
@@ -27,7 +25,6 @@ build() {
     export LDFLAGS="--static -lpthread -L/usr/lib -L/usr/include/ncurses -L/usr/include"
     ./configure $_buildflags
     make -j"${threads}"
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
@@ -36,7 +33,6 @@ package() {
     make -j1 install DESTDIR="$tmpdir" || return 1
 
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

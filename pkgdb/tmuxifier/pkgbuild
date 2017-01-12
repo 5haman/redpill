@@ -6,21 +6,18 @@ pkgdesc="Powerful session, window & pane management for Tmux"
 url="https://github.com/jimeh/tmuxifier"
 source="https://github.com/jimeh/$pkgname/archive/v$pkgver.tar.gz"
 
-_builddir="$srcdir"/$pkgname-$pkgver
-
 download() {
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xz -C "$srcdir"
+        curl -sSL "$source" | tar xz -C "$buildcache"
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+    echo
 }
 
 build() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+    echo
 }
 
 package() {
@@ -31,7 +28,6 @@ package() {
     cp -f init.sh "$tmpdir/usr/share/$pkgname"
 
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

@@ -2,22 +2,20 @@
 
 pkgname=syslinux
 pkgver=$version
-pkgdesc=""
-url=""
-source="$pkgname-$pkgver.tar.gz"
-
-_builddir="$srcdir/$pkgname-$pkgver"
+pkgdesc="Syslinux bootloader for DockerVM"
+url="https://github.com/5haman/dockervm"
+source="pkgsrc"
 
 download() {
     cp -Ra "$workdir/$pkgname/$source" "$_builddir"
 }
 
 prepare() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+    echo
 }
 
 build() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+    echo
 }
 
 package() {
@@ -26,7 +24,6 @@ package() {
     make -j1 install DESTDIR="$tmpdir" || return 1
 
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

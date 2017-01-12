@@ -6,25 +6,21 @@ pkgdesc="Docker blue-green/deployment/management supporting Mesos/Marathon and C
 url="http://depcon.containx.io/"
 source="https://github.com/ContainX/depcon/releases/download/v$pkgver/$pkgname_$pkgver_linux_amd64.tar.gz"
 
-_builddir="$srcdir"/$pkgname-$pkgver
-
 download() {
-    cd "$srcdir"
+    cd "$pkgdir"
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xz -C "$srcdir"
+        curl -sSL "$source" | tar xz -C "$buildcache"
         mv $pkgname_$pkgver_linux_amd64 $pkgname-$pkgver
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+		echo
 }
 
 build() {
     cd "$_builddir"
     sh -c "strip --strip-all $pkgname; upx --best --ultra-brute $pkgname; exit 0"
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
@@ -33,7 +29,6 @@ package() {
     mkdir -p "$tmpdir/usr/bin/"
     install -m755 $pkgname "$tmpdir/usr/bin/"
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

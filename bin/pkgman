@@ -18,11 +18,20 @@ build_pkg() {
     source "$pkgdir/$1/pkgbuild"
     if [ ! -f "$pkgcache/$pkgname-$pkgver.$pkgext" ]; then
         log " => Building '$pkgname-$pkgver.$pkgext'"
-        rm -rf "$pkgdir/$pkgname-$pkgver"
+        rm -rf "$buildcache/$pkgname-$pkgver"
+        _builddir="$buildcache/$pkgname-$pkgver"
+
         download
+        log " => '$pkgname-$pkgver.$pkgext' download OK"
+
         prepare
+        log " => '$pkgname-$pkgver.$pkgext' prepare OK"
+
         build
+        log " => '$pkgname-$pkgver.$pkgext' build OK"
+
         package
+        log " => '$pkgname-$pkgver.$pkgext' package OK"
     else
         log " => '$pkgname-$pkgver.$pkgext' already exists, skipping"
     fi

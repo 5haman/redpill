@@ -5,21 +5,18 @@ pkgver=3.91
 pkgdesc="UPX is a free, portable, extendable, high-performance executable packer for several executable formats"
 source="https://github.com/lalyos/docker-upx/releases/download/v3.91/upx"
 
-_builddir="$srcdir/$pkgname-$pkgver"
-
 download() {
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xz -C "$srcdir"
+        curl -sSL "$source" | tar xz -C "$buildcache"
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+    echo
 }
 
 build() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+    echo
 }
 
 package() {
@@ -28,7 +25,6 @@ package() {
     make -j1 install DESTDIR="$tmpdir/usr/bin" || return 1
 
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

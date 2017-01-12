@@ -6,7 +6,6 @@ pkgdesc="Standard Ext2/3/4 filesystem utilities"
 url="http://e2fsprogs.sourceforge.net"
 source="https://www.kernel.org/pub/linux/kernel/people/tytso/$pkgname/v$pkgver/$pkgname-$pkgver.tar.xz"
 
-_builddir="$srcdir/$pkgname-$pkgver"
 _buildflags="--mandir=/usr/share/man \
              --disable-elf-shlibs \
              --disable-tls \
@@ -14,20 +13,18 @@ _buildflags="--mandir=/usr/share/man \
 
 download() {
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xJ -C "$srcdir"
+        curl -sSL "$source" | tar xJ -C "$buildcache"
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+		echo
 }
 
 build() {
     cd "$_builddir"
     ./configure $_buildflags
     make -j"${threads}" CFLAGS='-Os -pipe' LDFLAGS='-s -static'
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
@@ -39,7 +36,6 @@ package() {
     # strip binary files
     sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
 
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

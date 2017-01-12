@@ -6,7 +6,6 @@ pkgdesc="RFC2131 compliant DHCP client"
 url="http://roy.marples.name/projects/dhcpcd/"
 source="http://roy.marples.name/downloads/$pkgname/$pkgname-$pkgver.tar.xz"
 
-_builddir="$srcdir/$pkgname-$pkgver"
 _buildflags="--sysconfdir=/etc \
              --mandir=/usr/share/man \
              --localstatedir=/var \
@@ -15,20 +14,18 @@ _buildflags="--sysconfdir=/etc \
 
 download() {
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xJ -C "$srcdir"
+        curl -sSL "$source" | tar xJ -C "$buildcache"
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+		echo
 }
 
 build() {
     cd "$_builddir"
     ./configure $_buildflags
     make -j"${threads}" CFLAGS='-Os -pipe' LDFLAGS='-s -static'
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
@@ -37,7 +34,6 @@ package() {
     make -j1 install DESTDIR="$tmpdir" || return 1
 
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

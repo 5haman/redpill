@@ -6,24 +6,20 @@ pkgdesc="Open-source continuous file synchronization"
 url="https://syncthing.net/"
 source="https://github.com/syncthing/syncthing/releases/download/v$pkgver/$pkgname-linux-amd64-v$pkgver.tar.gz"
 
-_builddir="$srcdir/$pkgname-$pkgver"
-
 download() {
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xz -C "$srcdir"
+        curl -sSL "$source" | tar xz -C "$buildcache"
         mv "$pkgname-linux-amd64-v$pkgver" "$pkgname-$pkgver"
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+    echo
 }
 
 build() {
     cd "$_builddir"
     sh -c "strip --strip-all $pkgname; upx --best --ultra-brute $pkgname; exit 0"
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
@@ -32,7 +28,6 @@ package() {
     mkdir -p $tmpdir/usr/bin
     install -m755 ./$pkgname $tmpdir/usr/bin/$pkgname
     cd $tmpdir
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }

@@ -6,15 +6,14 @@ pkgdesc=""
 url=""
 source="$pkgname-$pkgver.tar.gz"
 
-_builddir="$srcdir/$pkgname-$pkgver"
+_builddir="$buildcache/$pkgname-$pkgver"
 _buildflags="--disable-shared \
              --enable-static"
 
 download() {
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xz -C "$srcdir"
+        curl -sSL "$source" | tar xz -C "$buildcache"
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
@@ -25,7 +24,6 @@ prepare() {
                 *.patch) cp "$workdir/$pkgname/$i" "$_builddir/$i";;
         esac
     done
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 build() {
@@ -36,7 +34,6 @@ build() {
     ./configure $_buildflags
 
     make -j"${threads}" CFLAGS='-Os -pipe' LDFLAGS='-s -static'
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
@@ -48,7 +45,7 @@ package() {
     # strip binary files
     sh -c "find -type f | xargs strip --strip-all &>/dev/null; exit 0"
 
-    find | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
     log " => $pkgname: ${FUNCNAME[0]} OK"
 }

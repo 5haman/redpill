@@ -6,7 +6,6 @@ pkgdesc="The GNU Bourne Again shell"
 url="http://www.gnu.org/software/bash/bash.html"
 source="http://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz"
 
-_builddir="$srcdir/$pkgname-$pkgver"
 _buildflags="--prefix= \
         --enable-static-link \
         --without-bash-malloc \
@@ -14,32 +13,27 @@ _buildflags="--prefix= \
 
 download() {
     if [ ! -d "$_builddir" ]; then
-        curl -sSL "$source" | tar xz -C "$srcdir"
+        curl -sSL "$source" | tar xz -C "$buildcache"
     fi
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 prepare() {
-    log " => $pkgname: ${FUNCNAME[0]} OK"
+    echo
 }
 
 build() {
     cd "$_builddir"
-
     CFLAGS="${CFLAGS} -DDEFAULT_PATH_VALUE='\"/bin\"'
     -DSTANDARD_UTILS_PATH='\"/bin\"' -DSYS_BASH_LOGOUT='\"/etc/bash/bash_logout\"'
     -DSYS_BASHRC='\"/etc/bash/bashrc\"'" \
     ./configure $_buildflags
     make -j${threads}
-
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
 
 package() {
     tmpdir=$(mktemp -d $pkgname.XXX)
     make -j1 install DESTDIR="$tmpdir" || return 1
     cd $tmpdir
-    find bin | cpio -o -H newc | gzip -9 > "$pkgdir/$pkgname-$pkgver.$pkgext"
+    find bin | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
-    log " => $pkgname: ${FUNCNAME[0]} OK"
 }
