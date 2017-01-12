@@ -1,4 +1,3 @@
-modules.dep
 kernel/drivers/block/zram/zram.ko
 kernel/drivers/block/loop.ko
 kernel/drivers/dca/dca.ko

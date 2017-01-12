@@ -7,29 +7,62 @@ buildroot=${buildroot:-/var/cache/pkg}
 buildcache=${buildcache:-$HOME/.cache/dockervm}
 rootfs="$buildcache/rootfs"
 isodir="$buildcache/iso"
+lib_prefix="/opt"
 
 mkdir -p "$rootfs" "$isodir"
 rm -rf "$rootfs/*" "$isodir/*"
 
 # install libraries to builder container which required for static builds
 pkgman install \
-	libevent libmnl libnftnl readline e2fsprogs \
-	libressl ncurses skalibs execline s6 zlib
-            
+		libevent libmnl libnftnl linux readline e2fsprogs \
+		libressl ncurses skalibs execline s6 zlib
+
 # install main packages for stage1
 pkgman -d $rootfs install \
-	filesystem bash curl dhcpcd dropbear execline htop iptables linux \
-        s6 s6-linux-utils s6-portable-utils s6-rc tmux tmuxifier
+		filesystem bash curl dhcpcd dropbear execline htop iptables \
+		s6 s6-linux-utils s6-portable-utils s6-rc tmux tmuxifier
 
-# install bootloader
-pkgman -d $isodir install syslinux
+# clean rootfs
+find $rootfs/etc -name "*-" | xargs rm -f
+find $rootfs/ -name "*.a" | xargs rm -f
+find $rootfs/usr/share -type d | grep -vE "share$|dhcpcd|fonts|keymaps|tmux" | xargs rm -rf
+
+cd $rootfs
+rm -rf usr/include var/cache/apk/* linuxrc etc/init.d etc/conf.d \
+	   media .modloop srv etc/mkinitfs etc/*.apk-new etc/opt \
+	   etc/sysctl.d etc/udhcpd.conf usr/local/share etc/modules-load.d \
+	   etc/s6/inactive usr/lib/* boot/ lib/modules/*
+
+# strip binary files
+bash -c "find $rootfs -type f | xargs strip --strip-all &>/dev/null; exit 0"
+
+# install kernel and modules
+moddir="lib/modules/$KERNELVERSION"
+cd "/$moddir"
+mkdir -p "$rootfs/$moddir"
+cat "$buildroot/pkgdb/linux/pkgsrc/base.modules" | cpio -d -u -m -p "$rootfs/$moddir"
+#depmod -b "$rootfs" $KERNELVERSION
+
+# copy alpine keys
+mkdir -p "$rootfs"/etc/apk/keys
+cp "/etc/apk/keys/"* "$rootfs"/etc/apk/keys/
+
+# create initrd image
+cd $rootfs
+umask 0022
+(chown -R root "$rootfs" && cd "$rootfs" && find . | sort | cpio --quiet -o -H newc | xz --check=crc32 -9 -e --verbose) > $isodir/ramdisk.img
 
 # create main sqashfs image
 #mksquashfs $rootfs $isodir/rootfs.img -b 1048576 -comp xz -Xdict-size 100%
 
+# install kernel
+cp /boot/vmlinuz $isodir/kernel
+
+# install bootloader
+pkgman -d $isodir install syslinux
+
 # Builds an image that can be used as an ISO and a disk image
 xorriso -as mkisofs \
-        -publisher "DockerVM" \
         -c syslinux/boot.cat \
         -b syslinux/isolinux.bin \
         -no-emul-boot -boot-load-size 4 -boot-info-table \
