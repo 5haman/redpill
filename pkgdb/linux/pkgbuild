@@ -2,16 +2,42 @@
 
 pkgname=linux
 pkgver=pf-4.4
+#aufssource="https://github.com/sfjro/aufs4-standalone"
+#aufsver=aufs4.4
+#aufscomm=e56412975b6b2dde425e0fd897a6abd556b8828e
 pkgdesc="Linux kernel fork which provides a handful of awesome features not merged into mainline"
 url="https://pf.natalenko.name/"
 source="https://github.com/pfactum/pf-kernel"
 
 download() {
+    # download kernel
     if [ ! -d "$_builddir" ]; then
         git clone -b "$pkgver" --depth 1 "$source" "$_builddir"
     fi
+
+    return
+
+    # download aufs and apply patches
+    if [ ! -d "$buildcache/$aufsver" ]; then
+        git clone -b "$aufsver" --depth 1 "$aufssource" "$buildcache/$aufsver" 
+        #cd "$buildcache/$aufsver"
+        #git checkout -q "$aufscomm"
+        cd "$_builddir"
+        cp -r "$buildcache/$aufsver"/Documentation "$_builddir"
+        cp -r "$buildcache/$aufsver"/fs "$_builddir"
+        cp -r "$buildcache/$aufsver"/include/uapi/linux/aufs_type.h "$_builddir"/include/uapi/linux/
+        set -e && for patch in \
+            "$buildcache/$aufsver"/aufs*-kbuild.patch \
+            "$buildcache/$aufsver"/aufs*-base.patch \
+            "$buildcache/$aufsver"/aufs*-mmap.patch \
+            "$buildcache/$aufsver"/aufs*-standalone.patch \
+            "$buildcache/$aufsver"/aufs*-loopback.patch \
+        ; do \
+            patch -p1 < "$patch"; \
+        done
+    fi
 }
- 
+
 prepare() {
     mkdir -p /boot
     rm -rf /lib/modules/*
@@ -20,6 +46,7 @@ prepare() {
     cp -f "$pkgsrc/config.x86_64" .config
     cp -f "$pkgsrc/Makefile" Makefile
 
+    mkdir -p include/config
     echo "$KERNELVERSION" > include/config/kernel.release
 }
 

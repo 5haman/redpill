@@ -1,3 +1,7 @@
 dropbear
-#docker
-#portainer
+gotty
+docker
+portainer
+syncthing
+user-session
+user-setup

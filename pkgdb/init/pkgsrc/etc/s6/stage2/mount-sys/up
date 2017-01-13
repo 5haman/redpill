@@ -6,18 +6,6 @@ foreground {
     mount -o noatime,nodev,noexec,nosuid -t fusectl fusectl /sys/fs/fuse/connections
 }
 foreground {
-    if -t { grep -Fq configfs /proc/filesystems }
-    if -nt { mountpoint -q /sys/kernel/config }
-    if -t { mkdir -p /sys/kernel/config }
-    mount -o noatime,nodev,noexec,nosuid -t configfs configfs /sys/kernel/config
-}
-foreground {
-    if -t { grep -Fq debugfs /proc/filesystems }
-    if -nt { mountpoint -q /sys/kernel/debug }
-    if -t { mkdir -p /sys/kernel/debug }
-    mount -o noatime,nodev,noexec,nosuid -t debugfs debugfs /sys/kernel/debug
-}
-foreground {
     if -t { grep -Fq securityfs /proc/filesystems }
     if -nt { mountpoint -q /sys/kernel/security }
     if -t { mkdir -p /sys/kernel/security }

@@ -1,6 +1,6 @@
 NAME	      = dockervm
 VERSION       = 0.2
-KERNELVERSION = 4.4.39
+KERNELVERSION = 4.4.39+
 VOLUME        = /opt/build
 CACHE         = $(HOME)/.cache/dockervm
 DEBUG         = false
@@ -23,7 +23,6 @@ build:
 		-t $(FULLNAME) .
 
 dist:
-	rm -rf $(CACHE)/iso $(CACHE)/rootfs
 	$(DOCKER) run -it --rm \
 		-v $(CACHE):$(CACHE) \
 		-v $(PWD):$(VOLUME) \
@@ -57,6 +56,8 @@ run:
 clean:
 	rm -f pkgcache/init-*.pkg
 	rm -f pkgcache/filesystem-*.pkg
+	rm -rf $(CACHE)/iso $(CACHE)/rootfs
+	rm -rf $(CACHE)/init-* $(CACHE)/filesystem-*
 
 test:
 	mv .build/initrd .

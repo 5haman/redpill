@@ -6,4 +6,5 @@ rngd
 haveged
 crond
 console
+getty
 fifo-cleanup

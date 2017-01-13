@@ -21,20 +21,15 @@ foreground {
 
 # mount filesystems
 foreground {
-    if -nt { mountpoint -q /proc }
     if { mount /proc }
-
-    if -nt { mountpoint -q /sys }
     if { mount /sys }
-
-    if -nt { mountpoint -q /dev }
     if { mount /dev }
-
-    if -nt { mountpoint -q /run }
     if { mount /run }
-
-    if -nt { mountpoint -q /tmp }
     if { mount /tmp }
+    if { mkdir -p /mnt/bootdisk }
+    if { mount /mnt/bootdisk }
+    if { mkdir -p /mnt/lower1 }
+    if { mount /mnt/lower1 }
 }
 
 if { /etc/s6/init/zoverlay }

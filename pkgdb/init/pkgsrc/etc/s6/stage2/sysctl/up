@@ -3,4 +3,3 @@ foreground {
   printf 0
 }
 sysctl -p /etc/sysctl.conf
-ulimit -n 1048576

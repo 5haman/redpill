@@ -1,5 +1,5 @@
 #!/bin/execlineb -P
+if { mkdir -p /etc/dropbear }
 fdmove -c 2 1
-if { s6-mkdir -p /etc/dropbear }
 exec -c
 dropbear -K 180 -W 256000 -R -F -E -B -p 0.0.0.0:22

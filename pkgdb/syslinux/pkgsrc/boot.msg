@@ -1,10 +1,13 @@
-   ___                     __   ____  __ 
-  |   \ ___  __ _ _ ___ _ _\ \ / /  \/  |
-  |  ] / _ \/ _| / / -_) '_|\ V /| |\/| |
-  |___/\___/\__|_\_\___|_|   \_/ |_|  |_|
-
-          Welcome to DockerVM!
-
-DockerVM provides integrated environment for Docker 
-development and deployment without unnecesary hassle.
-
+     .--~~~~~~~~~~~~~------.     
+    /--===============------\    
+    | |```````````````|     |    
+    | |     HELLO,    |     |   ___                      __   ____  __
+    | | I'M DOCKER VM |     |  |   \ ___  __  _ _ ___ _ _\ \ / /  \/  |
+    | | # _           |     |  | () / _ \/ _\| / / -_) '_|\ V /| |\/| |
+    | |_______________|     |  |___/\___/\__/|_\_\___|_|   \_/ |_|  |_|
+    |                   ::::|    
+    '======================='  DockerVM provides integrated environmen 
+    //-"-"-"-"-"-"-"-"-"-"-\\   for Docker development and deployment  
+   //_"_"_"_"_"_"_"_"_"_"_"_\\   without unnecesary hassle.
+  (---------------------------)    
+   \_________________________/   # SYSTEM BOOTING

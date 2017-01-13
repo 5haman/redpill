@@ -1,91 +1,99 @@
 #!/usr/bin/env bash
-
-set -e
-[ "$debug" == "true" ] && set -x
+set -e; [ "$debug" == "true" ] && set -x
 
 buildroot=${buildroot:-/var/cache/pkg}
 buildcache=${buildcache:-$HOME/.cache/dockervm}
+
 rootfs="$buildcache/rootfs"
+squashfs="$buildcache/sqashfs"
 isodir="$buildcache/iso"
-lib_prefix="/opt"
+moddir="lib/modules/$KERNELVERSION"
 
-mkdir -p "$rootfs" "$isodir"
-rm -rf "$rootfs/*" "$isodir/*"
+pkg_install() {
+        # install libraries to builder container which required for static builds
+        pkgman install \
+                libevent libmnl libnftnl linux readline e2fsprogs \
+                libressl skalibs execline s6 zlib ncurses libpcap
 
-# install libraries to builder container which required for static builds
-pkgman install \
-		libevent libmnl libnftnl linux readline e2fsprogs \
-		libressl ncurses skalibs execline s6 zlib
+        # install main packages for stage1
+        pkgman -d $rootfs install \
+                filesystem bash curl dhcpcd dnsmasq dropbear execline haveged htop \
+                init iptables s6 s6-linux-utils s6-portable-utils s6-rc \
+                tmux tmuxifier rng-tools iftop
 
-# install main packages for stage1
-pkgman -d $rootfs install \
-		filesystem bash curl dhcpcd dnsmasq dropbear execline haveged htop \
-		init iptables s6 s6-linux-utils s6-portable-utils s6-rc \
-		tmux tmuxifier
+        # install main packages for stage2
+        pkgman -d $squashfs install portainer syncthing docker gotty
+                
+        # setup symlinks
+        chroot $rootfs bash -c "ln -sf /bin/busybox.static /bin/busybox"
+        chroot $rootfs bash -c "ln -sf /etc/terminfo /usr/share/terminfo"
+        chroot $rootfs bash -c "ln -sf /usr/share/tmuxifier/bin/tmuxifier /usr/bin/tmuxifier"
+        chroot $rootfs bash -c "cp -f /etc/session/.bashrc /root"
+        chroot $rootfs bash -c "cp -f /etc/session/.htoprc /root"
+        chroot $rootfs bash -c "cp -f /etc/session/.tmux.conf /root"
+        chroot $rootfs bash -c "passwd root -d toor"
 
-chroot $rootfs bash -c "ln -sf /bin/busybox.static /bin/busybox"
+        # install bootloader
+        pkgman -d $isodir install syslinux
+}
 
 # manual copy of some binaries
-cp -af /sbin/mkfs.ext2 $rootfs/sbin
-rm $rootfs/usr/sbin/setfont
-cp -af /usr/sbin/setfont $rootfs/usr/sbin
-cp -af /usr/bin/loadkeys $rootfs/usr/bin
-
-mkdir -p $rootfs/usr/share/consolefonts $rootfs/usr/share/keymaps/i386/include
-cp -af /usr/share/consolefonts/UniCyrExt_8x16.psf.gz $rootfs/usr/share/consolefonts
-cp -af /usr/share/keymaps/i386/include/unicode.map.gz $rootfs/usr/share/keymaps/i386/include
-
-cp -af /etc/mdev.conf $rootfs/etc
-cp -Raf /lib/mdev $rootfs/lib
-
-# copy alpine keys
-#mkdir -p "$rootfs"/etc/apk/keys
-#cp "/etc/apk/keys/"* "$rootfs"/etc/apk/keys/
+host_install() {
+        rm $rootfs/usr/sbin/setfont
+        cat "$buildroot/pkgdb/filesystem/base.files" | cpio -d -u -m -p "$rootfs/"
+}
 
 # clean rootfs
-find $rootfs/etc -name "*-" | xargs rm -f
-find $rootfs/ -name "*.a" | xargs rm -f
-find $rootfs/usr/share -type d | grep -vE "share$|dhcpcd|fonts|keymaps|tmux" | xargs rm -rf
-#find $rootfs/usr/local -type f | xargs rm -f
+root_clean() {
+        cd $rootfs
+        find $rootfs/usr/share -type d | grep -vE "share$|dhcpcd|fonts|keymaps|term|tmux" | xargs rm -rf
 
-cd $rootfs
-rm -rf usr/include linuxrc etc/init.d etc/conf.d \
-	   media .modloop srv etc/mkinitfs etc/*.apk-new etc/opt \
-	   etc/sysctl.d etc/udhcpd.conf usr/local/share etc/modules-load.d \
-	   etc/s6/inactive usr/lib/* boot/ \
-	   sbin/apk.static.SIGN.* session usr/etc lib/apk etc/apk var/cache/apk
+        rm -rf usr/lib/* usr/include usr/etc \
+	       etc/s6/inactive boot
+}
+    
+# create initrd and main images
+create_disks() {
+        # strip binary files
+        bash -c "find $rootfs -type f | xargs strip --strip-all &>/dev/null; exit 0"
 
-# strip binary files
-bash -c "find $rootfs -type f | xargs strip --strip-all &>/dev/null; exit 0"
+	 # copy kernel modules
+        cd "/$moddir"
+        mkdir -p "$rootfs/$moddir"
+        cat "$buildroot/pkgdb/filesystem/base.modules" | cpio -d -u -m -p "$rootfs/$moddir"
+        depmod -b "$rootfs" $KERNELVERSION
 
-# install kernel and modules
-moddir="lib/modules/$KERNELVERSION"
-cd "/$moddir"
-mkdir -p "$rootfs/$moddir"
-cat "$buildroot/pkgdb/linux/pkgsrc/base.modules" | cpio -d -u -m -p "$rootfs/$moddir"
-depmod -b "$rootfs" $KERNELVERSION
+        # create initrd image
+        cd $rootfs
+        umask 0022
+        (chown -R root "$rootfs" && cd "$rootfs" && find . | sort | cpio --quiet -o -H newc | xz --check=crc32 -9 -e --verbose) > $isodir/ramdisk.img
 
-# create initrd image
-cd $rootfs
-umask 0022
-(chown -R root "$rootfs" && cd "$rootfs" && find . | sort | cpio --quiet -o -H newc | xz --check=crc32 -9 -e --verbose) > $isodir/ramdisk.img
+        # create main sqashfs image
+        mksquashfs $squashfs $isodir/squashfs.img -b 1048576 -comp xz -Xdict-size 100%
+}
 
-# create main sqashfs image
-#mksquashfs $rootfs $isodir/rootfs.img -b 1048576 -comp xz -Xdict-size 100%
+make_iso() {
+        # install kernel
+        cp /boot/vmlinuz $isodir/kernel
 
-# install kernel
-cp /boot/vmlinuz $isodir/kernel
+        # Builds an image that can be used as an ISO and a disk image
+        xorriso -as mkisofs \
+                -c syslinux/boot.cat \
+                -b syslinux/isolinux.bin \
+                -no-emul-boot -boot-load-size 4 -boot-info-table \
+                -isohybrid-mbr /usr/share/syslinux/isohdpfx.bin \
+                -eltorito-alt-boot \
+                -e /ramdisk.img \
+                -no-emul-boot -isohybrid-gpt-basdat \
+                -o "$buildroot/dist/dockervm.iso" $isodir
+}
 
-# install bootloader
-pkgman -d $isodir install syslinux
+# main script
+rm -rf "$rootfs" "$isodir" "$squashfs"
+mkdir -p "$rootfs" "$isodir" "$squashfs"
 
-# Builds an image that can be used as an ISO and a disk image
-xorriso -as mkisofs \
-        -c syslinux/boot.cat \
-        -b syslinux/isolinux.bin \
-        -no-emul-boot -boot-load-size 4 -boot-info-table \
-        -isohybrid-mbr /usr/share/syslinux/isohdpfx.bin \
-        -eltorito-alt-boot \
-        -e /ramdisk.img \
-        -no-emul-boot -isohybrid-gpt-basdat \
-        -o "$buildroot/dist/dockervm.iso" $isodir
+pkg_install
+host_install
+root_clean
+create_disks
+make_iso

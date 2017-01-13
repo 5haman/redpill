@@ -5,7 +5,13 @@ pkgver=6.0
 pkgdesc="GNU console display library"
 source="http://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.gz"
 
-_buildflags="--prefix=/usr --without-cxx --without-cxx-bindings --enable-static"
+#_buildflags="--prefix=/usr --without-shared --with-normal --without-debug"
+_buildflags="--mandir=/usr/share/man \
+        --without-cxx-binding \
+        --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo \
+        --with-normal \
+        --without-shared \
+        --without-progs"
 
 download() {
     if [ ! -d "$_builddir" ]; then
@@ -19,6 +25,7 @@ prepare() {
 
 build() {
     cd "$_builddir"
+    #CFLAGS="-O0 -fomit-frame-pointer -static" \
     ./configure $_buildflags
     make -j"${threads}"
 }

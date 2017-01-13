@@ -1,0 +1,4 @@
+#!/bin/execlineb -P
+fdmove -c 2 1
+exec -c
+/usr/bin/gotty --config /etc/gotty.conf -c "root:toor" -w /bin/session

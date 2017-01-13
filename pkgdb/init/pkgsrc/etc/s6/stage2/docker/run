@@ -1,0 +1,12 @@
+#!/bin/bash
+
+ulimit -n 1048576
+
+dockerd --storage-driver=overlay2 \
+	--oom-score-adjust=-900 \
+	--ipv6 --live-restore \
+	--max-concurrent-downloads=5 \
+	--raw-logs \
+	-H tcp://0.0.0.0:2375 \
+	-H unix:///var/run/docker.sock \
+	-p /run/dockerd.pid 2>&1

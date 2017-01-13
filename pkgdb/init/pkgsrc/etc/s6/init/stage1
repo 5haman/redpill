@@ -4,22 +4,9 @@
 
 cd /
 
-# parse and set environment
-background {
-    if { s6-mkdir -p /run/s6/env }
-    if { s6-test -e /etc/s6/env.conf }
-    redirfd -r 0 /etc/s6/env.conf
-    pipeline { s6-grep -vF -- "#" }
-    forstdin -nCd"\n" -- envvar
-    importas -ui -D "" envvar envvar
-    multidefine -d"=" $envvar { var value }
-    foreground {
-        redirfd -w 1 /run/s6/env/$var
-        s6-echo -n -- $value
-    }
-}
-
 # set environment
+if { s6-mkdir -p /run/s6 }
+if { s6-hiercopy /etc/s6/env /run/s6/env }
 s6-setsid -qb --
 umask 022
 emptyenv -p
@@ -27,7 +14,6 @@ s6-envdir /run/s6/env
 
 # Copy service for pid1 at the right place
 foreground {
-    if { s6-mkdir -p /run/s6 }
     if { s6-hiercopy /etc/s6/stage1 /run/s6/service }
     if { mkfifo -m 0600 /run/s6/service/s6-logger/fifo }
 }

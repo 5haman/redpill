@@ -20,7 +20,7 @@ prepare() {
 
 build() {
     cd "$_builddir"
-    ./configure $_buildflags
+    LIBS="-largp" ./configure $_buildflags
     make -j"${threads}" CFLAGS='-static -static-libgcc' LDFLAGS='-static'
 }
 

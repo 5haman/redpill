@@ -9,17 +9,17 @@ source="https://get.docker.com/builds/Linux/x86_64/$pkgname-$pkgver.tgz"
 download() {
     if [ ! -d "$_builddir" ]; then
         curl -sSL "$source" | tar xz -C "$buildcache"
-        mv $pkgname $pkgname-$pkgver
+        mv "$buildcache/$pkgname" "$buildcache/$pkgname-$pkgver"
     fi
 }
 
 prepare() {
-		echo
+    echo
 }
 
 build() {
     cd "$_builddir"
-    sh -c "strip --strip-all *; upx --best --ultra-brute *; exit 0"
+    sh -c "strip --strip-all *; exit 0"
 }
 
 package() {

@@ -24,7 +24,8 @@ package() {
     cd "$_builddir"
     tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
     mkdir -p "$tmpdir/usr/share/$pkgname"
-    cp -Rf bin layouts lib libexec "$tmpdir/usr/share/$pkgname"
+    cp -Rf bin completion lib libexec "$tmpdir/usr/share/$pkgname"
+    cp -Rf "$_srcdir/pkgsrc/layouts" "$tmpdir/usr/share/$pkgname"
     cp -f init.sh "$tmpdir/usr/share/$pkgname"
 
     cd $tmpdir

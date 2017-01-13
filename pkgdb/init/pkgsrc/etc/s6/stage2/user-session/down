@@ -1,0 +1,2 @@
+s6-setuidgid %I
+foreground { s6-rc -l /run/user/%I/rc -ad change }

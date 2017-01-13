@@ -9,7 +9,7 @@ source="https://github.com/syncthing/syncthing/releases/download/v$pkgver/$pkgna
 download() {
     if [ ! -d "$_builddir" ]; then
         curl -sSL "$source" | tar xz -C "$buildcache"
-        mv "$pkgname-linux-amd64-v$pkgver" "$pkgname-$pkgver"
+        mv "$buildcache/$pkgname-linux-amd64-v$pkgver" "$buildcache/$pkgname-$pkgver"
     fi
 }
 
@@ -19,7 +19,7 @@ prepare() {
 
 build() {
     cd "$_builddir"
-    sh -c "strip --strip-all $pkgname; upx --best --ultra-brute $pkgname; exit 0"
+    sh -c "strip --strip-all $pkgname; exit 0"
 }
 
 package() {
