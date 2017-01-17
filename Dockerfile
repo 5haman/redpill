@@ -7,10 +7,9 @@ RUN echo "http://dl-5.alpinelinux.org/alpine/v3.5/main" > /etc/apk/repositories 
     && echo "http://dl-4.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
     && apk -U --no-cache add argp-standalone autoconf automake bash \
            bc binutils bison bsd-compat-headers busybox-initscripts \
-           coreutils cpio curl emacs file flex g++ gcc git gmp-dev \
-           go grep kbd kbd-misc linux-headers make mpc1-dev mpfr-dev \
-           musl-dev ncurses ocaml perl protobuf-dev \
-           sed squashfs-tools syslinux xorriso xz
+           coreutils cpio curl emacs file flex g++ gcc git gzip xz \
+           go grep kbd kbd-misc linux-headers make patch sed syslinux \
+           musl-dev ncurses ocaml perl sed tar libtool squashfs-tools xorriso
 
 #    && curl -sSL https://github.com/lalyos/docker-upx/releases/download/v3.91/upx \
 #           -o /usr/bin/upx \
@@ -18,11 +17,12 @@ RUN echo "http://dl-5.alpinelinux.org/alpine/v3.5/main" > /etc/apk/repositories 
 #    && rm -f /usr/lib/libc.so
 
 COPY bin/* /usr/bin/
+COPY bin/diskmount /sbin
 
 ARG version
 ARG buildroot
 ARG buildcache
-ARG debug
+ARG DEBUG
 ARG KERNELVERSION
 
 WORKDIR "${buildroot}"

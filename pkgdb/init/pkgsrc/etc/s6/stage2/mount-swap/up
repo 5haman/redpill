@@ -1,7 +1,7 @@
 foreground {
-    mkswap /dev/zram0
+    mkswap /dev/zram2
 }
 
 foreground {
-    swapon -p 10 /dev/zram0
+    swapon -p 10 /dev/zram2
 }

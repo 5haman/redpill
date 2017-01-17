@@ -7,7 +7,7 @@ window_root "$session_root"
 new_window "top"
 
 # Split window into panes.
-split_h 49
+split_h 50
 select_pane 0
 run_cmd "iftop -n -i eth0"
 split_v 50

@@ -1,8 +1,0 @@
-FROM scratch
-
-ADD initrd/ /
-
-WORKDIR /root
-
-#ENTRYPOINT ["/init"]
-ENTRYPOINT ["/bin/bash"]

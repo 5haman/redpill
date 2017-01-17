@@ -32,6 +32,6 @@ foreground {
     if { mount /mnt/lower1 }
 }
 
-if { /etc/s6/init/zoverlay }
+if { /etc/s6/init/overlay }
 exec -c
 /bin/busybox switch_root /newroot /etc/s6/init/stage1

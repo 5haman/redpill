@@ -1,0 +1,65 @@
+# package: lvm2
+
+pkgname=lvm2
+pkgver=2.02.168
+pkgdesc="Logical Volume Manager 2 utilities"
+url="http://sourceware.org/lvm2/"
+source="ftp://sources.redhat.com/pub/lvm2/LVM2.$pkgver.tgz
+    fix-stdio-usage.patch
+    mallinfo.patch
+    library_dir-default-config.patch
+    mlockall-default-config.patch"
+
+_buildflags="--prefix=/usr \
+        --sysconfdir=/etc \
+        --libdir=/lib \
+        --sbindir=/sbin \
+        --localstatedir=/var \
+	--enable-static_link \
+        --disable-nls \
+        --disable-readline \
+        --disable-pkgconfig \
+	--disable-selinux \
+	--disable-blkdeactivate \
+	--with-pool=none \
+	--with-cluster=none"
+
+download() {
+    if [ ! -d "$_builddir" ]; then
+        local i
+        for i in $source; do
+            case $i in
+                *.tgz) curl -sSL "$i" | tar xz -C "$buildcache"; mv "$buildcache/LVM2.$pkgver" "$buildcache/lvm2-$pkgver";;
+                *.patch) cp "$_srcdir/patch/$i" "$_builddir/$i";;
+            esac
+        done
+    fi
+}
+
+prepare() {
+    cd "$_builddir"
+    local i
+    for i in $source; do
+        case $i in
+            *.patch) patch -p1 -i "$i" || return 1;;
+        esac
+    done
+}
+
+build() {
+    cd "$_builddir"
+    #export ac_cv_func_malloc_0_nonnull=yes
+    #export ac_cv_func_realloc_0_nonnull=yes
+
+    ./configure $_buildflags
+    make -j"${threads}"
+}
+
+package() {
+    cd "$_builddir"
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
+    make -j1 install DESTDIR="$tmpdir" || return 1
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+}

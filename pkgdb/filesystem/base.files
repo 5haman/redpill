@@ -4,6 +4,8 @@
 /lib/mdev/usbdisk_link
 /lib/mdev/usbdev
 /sbin/mkfs.ext2
+/sbin/mkfs.xfs
+/sbin/diskmount
 /usr/bin/loadkeys
 /usr/sbin/setfont
 /usr/share/consolefonts/UniCyrExt_8x16.psf.gz

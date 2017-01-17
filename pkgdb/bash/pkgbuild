@@ -24,8 +24,8 @@ prepare() {
 build() {
     cd "$_builddir"
     CFLAGS="${CFLAGS} -DDEFAULT_PATH_VALUE='\"/bin\"'
-    -DSTANDARD_UTILS_PATH='\"/bin\"' -DSYS_BASH_LOGOUT='\"/etc/bash/bash_logout\"'
-    -DSYS_BASHRC='\"/etc/bash/bashrc\"'" \
+    -DSTANDARD_UTILS_PATH='\"/bin\"' -DSYS_BASH_LOGOUT='\"/etc/bash_logout\"'
+    -DSYS_BASHRC='\"/etc/profile\"'" \
     ./configure $_buildflags
     make -j${threads}
 }

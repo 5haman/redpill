@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -e; [ "$debug" == "true" ] && set -x
+
+set -e; [ "$DEBUG" == "true" ] && set -x
 
 buildroot=${buildroot:-/var/cache/pkg}
 buildcache=${buildcache:-$HOME/.cache/dockervm}
@@ -13,7 +14,8 @@ pkg_install() {
         # install libraries to builder container which required for static builds
         pkgman install \
                 libevent libmnl libnftnl linux readline e2fsprogs \
-                libressl skalibs execline s6 zlib ncurses libpcap
+                libressl skalibs execline s6 zlib ncurses libpcap vim \
+		util-linux xfsprogs
 
         # install main packages for stage1
         pkgman -d $rootfs install \
@@ -24,16 +26,7 @@ pkg_install() {
         # install main packages for stage2
         pkgman -d $squashfs install portainer syncthing docker gotty
                 
-        # setup symlinks
-        chroot $rootfs bash -c "ln -sf /bin/busybox.static /bin/busybox"
-        chroot $rootfs bash -c "ln -sf /etc/terminfo /usr/share/terminfo"
-        chroot $rootfs bash -c "ln -sf /usr/share/tmuxifier/bin/tmuxifier /usr/bin/tmuxifier"
-        chroot $rootfs bash -c "cp -f /etc/session/.bashrc /root"
-        chroot $rootfs bash -c "cp -f /etc/session/.htoprc /root"
-        chroot $rootfs bash -c "cp -f /etc/session/.tmux.conf /root"
-        chroot $rootfs bash -c "passwd root -d toor"
-
-        # install bootloader
+             # install bootloader
         pkgman -d $isodir install syslinux
 }
 
@@ -41,19 +34,41 @@ pkg_install() {
 host_install() {
         rm $rootfs/usr/sbin/setfont
         cat "$buildroot/pkgdb/filesystem/base.files" | cpio -d -u -m -p "$rootfs/"
+        cat "$buildroot/pkgdb/filesystem/lib.files" | cpio -d -u -m -p "$rootfs/"
+        cat "$buildroot/pkgdb/filesystem/vim.files" | cpio -d -u -m -p "$rootfs/"
+
+	cp -af "$buildroot"/bin/* "$rootfs"/usr/bin
+}
+
+chroot_install() {
+    # add users
+    chroot $rootfs addgroup -S docker
+    chroot $rootfs addgroup -S dnsmasq
+    chroot $rootfs adduser -S -D -H -h /dev/null -s /sbin/nologin -G  docker docker
+    chroot $rootfs adduser -S -D -H -h /dev/null -s /sbin/nologin -G  dnsmasq dnsmasq
+
+    # setup symlinks
+    chroot $rootfs bash -c "ln -sf /bin/busybox.static /bin/busybox"
+    chroot $rootfs bash -c "ln -sf /etc/terminfo /usr/share/terminfo"
+    chroot $rootfs bash -c "ln -sf /usr/share/tmuxifier/bin/tmuxifier /usr/bin/tmuxifier"
+    chroot $rootfs bash -c "cp -f /etc/session/.bashrc /root"
+    chroot $rootfs bash -c "cp -f /etc/session/.htoprc /root"
+    chroot $rootfs bash -c "cp -f /etc/session/.tmux.conf /root"
+    chroot $rootfs bash -c "cp -f /etc/session/.vimrc /root"
+    chroot $rootfs bash -c "passwd root -d toor"
 }
 
 # clean rootfs
 root_clean() {
         cd $rootfs
-        find $rootfs/usr/share -type d | grep -vE "share$|dhcpcd|fonts|keymaps|term|tmux" | xargs rm -rf
+        find $rootfs/usr/share -type d | grep -vE "share$|dhcpcd|fonts|keymaps|term|tmux|vim" | xargs rm -rf
 
         rm -rf usr/lib/* usr/include usr/etc \
 	       etc/s6/inactive boot
 }
     
 # create initrd and main images
-create_disks() {
+create_images() {
         # strip binary files
         bash -c "find $rootfs -type f | xargs strip --strip-all &>/dev/null; exit 0"
 
@@ -85,7 +100,7 @@ make_iso() {
                 -eltorito-alt-boot \
                 -e /ramdisk.img \
                 -no-emul-boot -isohybrid-gpt-basdat \
-                -o "$buildroot/dist/dockervm.iso" $isodir
+                -o "$buildroot/dist/dockervm.img" $isodir
 }
 
 # main script
@@ -94,6 +109,7 @@ mkdir -p "$rootfs" "$isodir" "$squashfs"
 
 pkg_install
 host_install
+chroot_install
 root_clean
-create_disks
+create_images
 make_iso

@@ -19,7 +19,7 @@ build:
 		--build-arg buildcache=$(CACHE) \
 		--build-arg version=$(VERSION) \
 		--build-arg KERNELVERSION=$(KERNELVERSION) \
-		--build-arg debug=$(DEBUG) \
+		--build-arg DEBUG=$(DEBUG) \
 		-t $(FULLNAME) .
 
 dist:
@@ -27,10 +27,10 @@ dist:
 		-v $(CACHE):$(CACHE) \
 		-v $(PWD):$(VOLUME) \
 		-e KERNELVERSION=$(KERNELVERSION) \
+		-e DEBUG=$(DEBUG) \
 		-e buildroot=$(VOLUME) \
 	        -e buildcache=$(CACHE) \
 	        -e version=$(VERSION) \
-		-e debug=$(DEBUG) \
 		$(FULLNAME) builder
 
 info:
@@ -47,10 +47,10 @@ run:
 		-v $(CACHE):$(CACHE) \
 		-v $(PWD):$(VOLUME) \
 		-e KERNELVERSION=$(KERNELVERSION) \
+		-e DEBUG=$(DEBUG) \
 		-e buildroot=$(VOLUME) \
 	        -e buildcache=$(CACHE) \
 	        -e version=$(VERSION) \
-		-e debug=$(DEBUG) \
 		$(FULLNAME)
 
 clean:

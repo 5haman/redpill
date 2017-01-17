@@ -3,11 +3,10 @@ overlay
 ext2
 loop
 isofs
+exportfs
+libcrc32c
 squashfs
-fuse
-nls_ascii
-nls_cp1251
-nls_utf8
+xfs
 ata_generic
 ahci
 cdrom

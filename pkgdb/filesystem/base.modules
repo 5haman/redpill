@@ -7,6 +7,7 @@ kernel/drivers/block/zram/zram.ko
 kernel/drivers/cdrom/cdrom.ko
 kernel/drivers/scsi/sd_mod.ko
 kernel/drivers/scsi/sr_mod.ko
+kernel/fs/exportfs/exportfs.ko
 kernel/fs/ext2/ext2.ko
 kernel/fs/fuse/cuse.ko
 kernel/fs/fuse/fuse.ko
@@ -19,7 +20,9 @@ kernel/fs/nls/nls_cp1251.ko
 kernel/fs/nls/nls_utf8.ko
 kernel/fs/overlayfs/overlay.ko
 kernel/fs/squashfs/squashfs.ko
+kernel/fs/xfs/xfs.ko
 kernel/lib/crc16.ko
+kernel/lib/libcrc32c.ko
 kernel/net/802/stp.ko
 kernel/net/bridge/bridge.ko
 kernel/net/bridge/br_netfilter.ko

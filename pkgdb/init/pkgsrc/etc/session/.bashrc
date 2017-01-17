@@ -8,7 +8,7 @@ alias ll='ls -la'
 
 export EDITOR=vi
 export PAGER=less
-export PS1="\[\e[32;1m\][\[\e[m\]\[\e[31;1m\]\u\[\e[m\]\[\e[32;1m\]@\[\e[m\]\h\[\e[m\]: \[\e[m\]\[\e[36;1m\]\W\[\e[m\]\[\e[32;1m\]\[\e[m\]\[\e[31;1m \[\e[32;1m\]\A]\[\e[31;1m\]\]\\$\[\e[m\] "
+export PS1="\[\e[32;1m\][\[\e[m\]\[\e[31;1m\]\u\[\e[m\]\[\e[32;1m\]@\[\e[m\]\H\[\e[m\]: \[\e[m\]\[\e[36;1m\]\W\[\e[m\]\[\e[32;1m\]\[\e[m\]\[\e[31;1m \[\e[32;1m\]\A]\[\e[31;1m\]\]\\$\[\e[m\] "
 
 # don't put duplicate lines in the historyi
 HISTCONTROL=ignoredups:ignorespace
