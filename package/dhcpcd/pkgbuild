@@ -1,0 +1,39 @@
+# package: dhcpcd
+
+pkgname=dhcpcd
+pkgver=6.11.5
+pkgdesc="RFC2131 compliant DHCP client"
+url="http://roy.marples.name/projects/dhcpcd/"
+source="http://roy.marples.name/downloads/$pkgname/$pkgname-$pkgver.tar.xz"
+
+_buildflags="--sysconfdir=/etc \
+             --mandir=/usr/share/man \
+             --localstatedir=/var \
+             --libexecdir=/usr/share/$pkgname \
+             --dbdir=/var/lib/$pkgname"
+
+download() {
+    if [ ! -d "$_builddir" ]; then
+        curl -sSL "$source" | tar xJ -C "$buildcache"
+    fi
+}
+
+prepare() {
+		echo
+}
+
+build() {
+    cd "$_builddir"
+    ./configure $_buildflags
+    make -j"${threads}" CFLAGS='-Os -pipe' LDFLAGS='-s -static'
+}
+
+package() {
+    cd "$_builddir"
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
+    make -j1 install DESTDIR="$tmpdir" || return 1
+
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+}

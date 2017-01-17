@@ -3,7 +3,7 @@
 set -e; [ "$DEBUG" == "true" ] && set -x
 
 buildroot=${buildroot:-/var/cache/pkg}
-buildcache=${buildcache:-$HOME/.cache/dockervm}
+buildcache=${buildcache:-$HOME/.cache/redpill}
 
 rootfs="$buildcache/rootfs"
 squashfs="$buildcache/sqashfs"
@@ -21,7 +21,7 @@ pkg_install() {
         pkgman -d $rootfs install \
                 filesystem bash curl dhcpcd dnsmasq dropbear execline haveged htop \
                 init iptables s6 s6-linux-utils s6-portable-utils s6-rc \
-                tmux tmuxifier rng-tools iftop
+                tmux tmuxifier rng-tools iftop depcon
 
         # install main packages for stage2
         pkgman -d $squashfs install portainer syncthing docker gotty
@@ -100,7 +100,7 @@ make_iso() {
                 -eltorito-alt-boot \
                 -e /ramdisk.img \
                 -no-emul-boot -isohybrid-gpt-basdat \
-                -o "$buildroot/dist/dockervm.img" $isodir
+                -o "$buildroot/dist/redpill-v${version}.img" $isodir
 }
 
 # main script

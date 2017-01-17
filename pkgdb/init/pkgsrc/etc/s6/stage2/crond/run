@@ -1,5 +1,0 @@
-#!/bin/execlineb -P
-if -t { mkdir -p /var/spool/cron/crontabs }
-fdmove -c 2 1
-exec -c
-/usr/sbin/crond -f -S -c /var/spool/cron/crontabs

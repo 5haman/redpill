@@ -1,4 +1,0 @@
-foreground {
-    umount /home
-    umount /var
-}

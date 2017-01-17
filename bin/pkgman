@@ -3,9 +3,9 @@
 set -e; [ "$DEBUG" == "true" ] && set -x
 
 buildroot=${buildroot:-/var/cache/pkg}
-buildcache=${buildcache:-$HOME/.cache/dockervm}
-pkgdir="$buildroot/pkgdb"
-pkgcache="$buildroot/pkgcache"
+buildcache=${buildcache:-$HOME/.cache/redpill}
+pkgdir="$buildroot/package"
+pkgcache="$buildroot/package/.cache"
 
 threads=$(cat /proc/cpuinfo | grep processor | wc -l)
 pkgext=pkg
@@ -66,7 +66,7 @@ log() {
 }
 
 usage() {
-    printf "DockerVM Package Manager (v$version)
+    printf "Package Manager (v$version)
 
 Usage: $(basename "$0") [-d|-h|-v] command [<package> ...]
 

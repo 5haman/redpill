@@ -1,0 +1,13 @@
+# setup /sys
+foreground {
+    if -t { grep -Fq fusectl /proc/filesystems }
+    if -nt { mountpoint -q /sys/fs/fuse/connections }
+    if { mkdir -p /sys/fs/fuse/connections }
+    mount -o noatime,nodev,noexec,nosuid -t fusectl fusectl /sys/fs/fuse/connections
+}
+foreground {
+    if -t { grep -Fq securityfs /proc/filesystems }
+    if -nt { mountpoint -q /sys/kernel/security }
+    if -t { mkdir -p /sys/kernel/security }
+    mount -o noatime,nodev,noexec,nosuid -t securityfs securityfs /sys/kernel/security
+}

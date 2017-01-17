@@ -1,0 +1,35 @@
+# package: execline
+
+pkgname=execline
+pkgver=2.2.0.0
+pkgdesc="A small scripting language, to be used in place of a shell in non-interactive scripts."
+url="http://skarnet.org/software/execline/"
+source="http://skarnet.org/software/$pkgname/$pkgname-$pkgver.tar.gz"
+
+_buildflags="--enable-static-libc"
+
+download() {
+    if [ ! -d "$_builddir" ]; then
+        curl -sSL "$source" | tar xz -C "$buildcache"
+    fi
+}
+
+prepare() {
+		echo
+}
+
+build() {
+    cd "$_builddir"
+    ./configure $_buildflags
+    make -j"${threads}"
+}
+
+package() {
+    cd "$_builddir"
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
+    make -j1 install DESTDIR="$tmpdir" || return 1
+
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+}

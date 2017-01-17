@@ -1,0 +1,14 @@
+ipv6
+overlay
+ext2
+loop
+isofs
+exportfs
+libcrc32c
+squashfs
+xfs
+ata_generic
+ahci
+cdrom
+sd_mod
+sr_mod

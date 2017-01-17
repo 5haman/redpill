@@ -1,0 +1,4 @@
+#!/bin/execlineb -P
+fdmove -c 2 1
+exec -c
+/sbin/syslogd -n -b 10 -s 1024 -S -O /var/log/messages

@@ -1,0 +1,27 @@
+# package: syslinux
+
+pkgname=syslinux
+pkgver=$version
+pkgdesc="Syslinux bootloader for Redpill Linux"
+url="https://github.com/5haman/redpill"
+source="pkgsrc"
+
+download() {
+    echo
+}
+
+prepare() {
+    echo
+}
+
+build() {
+    echo
+}
+
+package() {
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
+    cd $tmpdir
+    cp -Ra "$_srcdir/$source" syslinux
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+}

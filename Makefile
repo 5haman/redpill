@@ -1,8 +1,8 @@
-NAME	      = dockervm
+NAME	      = redpill
 VERSION       = 0.2
 KERNELVERSION = 4.4.39+
 VOLUME        = /opt/build
-CACHE         = $(HOME)/.cache/dockervm
+CACHE         = $(HOME)/.cache/redpill
 DEBUG         = false
 
 FULLNAME  = $(NAME):$(VERSION)
@@ -70,13 +70,13 @@ www:
 	cd dist && $(PYTHON) -m SimpleHTTPServer 8000
 
 box:
-	qemu-img convert -f raw -O qcow2 dist/dockervm.iso dist/vagrant/dockervm.img
-	rm -rf $(HOME)/.dockervm
-	mkdir $(HOME)/.dockervm
-	cd dist/vagrant && tar czf $(HOME)/.dockervm/dockervm.box metadata.json Vagrantfile dockervm.img
-	vagrant box add iconlinux $(HOME)/.dockervm/dockervm.box --force --provider=libvirt
-	cd $(HOME)/.dockervm \
-	&& vagrant init -m dockervm  \
+	qemu-img convert -f raw -O qcow2 dist/redpill.iso dist/vagrant/redpill.img
+	rm -rf $(HOME)/.redpill
+	mkdir $(HOME)/.redpill
+	cd dist/vagrant && tar czf $(HOME)/.redpill/redpill.box metadata.json Vagrantfile redpill.img
+	vagrant box add iconlinux $(HOME)/.redpill/redpill.box --force --provider=libvirt
+	cd $(HOME)/.redpill \
+	&& vagrant init -m redpill  \
 	&& vagrant up --provider=libvirt
 
 .PHONY: build install dist

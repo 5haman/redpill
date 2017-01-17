@@ -1,0 +1,10 @@
+mdev
+klogd
+syslogd
+sysctl
+rngd
+haveged
+crond
+console
+getty
+fifo-cleanup

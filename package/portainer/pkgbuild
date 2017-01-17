@@ -1,0 +1,37 @@
+# package: portainer
+
+pkgname=portainer
+pkgver=1.11.0
+pkgdesc="Portainer is a open-source lightweight management UI for Docker"
+url="http://portainer.io/"
+source="https://github.com/portainer/portainer/releases/download/$pkgver/$pkgname-$pkgver-linux-amd64.tar.gz"
+
+download() {
+    if [ ! -d "$_builddir" ]; then
+        curl -sSL "$source" | tar xz -C "$buildcache"
+        mv "$buildcache/$pkgname" "$buildcache/$pkgname-$pkgver"
+    fi
+}
+
+prepare() {
+    echo
+}
+
+build() {
+    cd "$_builddir"
+    sh -c "strip --strip-all $pkgname; exit 0"
+    #sh -c "strip --strip-all $pkgname; upx --best --ultra-brute $pkgname; exit 0"
+}
+
+package() {
+    cd "$_builddir"
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
+    mkdir -p "$tmpdir/usr/bin/" "$tmpdir/usr/share/$pkgname"
+    install -m755 $pkgname "$tmpdir/usr/bin/"
+    #install -Dm755 css fonts ico images js "$tmpdir/usr/share/$pkgname"
+    cp -Rv css fonts ico images js index.html "$tmpdir/usr/share/$pkgname"
+    #install -m644 index.html "$tmpdir/usr/share/$pkgname"
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+}

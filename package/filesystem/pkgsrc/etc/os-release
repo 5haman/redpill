@@ -1,0 +1,6 @@
+NAME=Redpill Linux
+ID=redpill
+VERSION_ID={{VERSION}}
+PRETTY_NAME="Redpill Linux {{VERSION}}"
+HOME_URL="https://github.com/5haman/redpill"
+BUG_REPORT_URL="https://github.com/5haman/redpill/issues"

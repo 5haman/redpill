@@ -1,2 +1,0 @@
-if { umount -l /run/user/%I }
-rmdir /run/user/%I

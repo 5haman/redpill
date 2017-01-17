@@ -1,0 +1,35 @@
+#!/usr/bin/s6-withenv bash
+
+TMUXIFIER_LAYOUT_PATH=${TMUXIFIER_LAYOUT_PATH:-/usr/share/tmuxifier/layouts}
+USER=`/usr/bin/whoami`
+
+function restore_session() {
+    SESSION_ID="`/usr/bin/whoami`_`date +%S`"
+    s6-withenv tmux new-session -d -t $1 -s $SESSION_ID \; set-option destroy-unattached \; attach-session -t $SESSION_ID
+}
+
+function new_session() {
+    s6-withenv tmuxifier load-session $1
+    restore_session $1
+}
+
+eval "$(tmuxifier init -)"
+
+tmux_nb=$(tmux ls 2>&1 | grep "^$USER" | wc -l)
+
+if [[ "$tmux_nb" == "0" ]]; then
+    if [ ! -f "$TMUXIFIER_LAYOUT_PATH/$USER.session.sh" ]; then
+        cp "$TMUXIFIER_LAYOUT_PATH/login.session.sh" "$TMUXIFIER_LAYOUT_PATH/$USER.session.sh"
+    fi
+    new_session $USER
+else
+    # Make sure we are not already in a tmux session
+    if [[ -z "$TMUX" ]]; then
+	restore_session $USER
+    else
+        s6-withenv bash -i
+    fi
+fi
+
+clear
+exit 0

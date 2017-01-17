@@ -1,0 +1,32 @@
+# package: dnsmasq
+
+pkgname=dnsmasq
+pkgver=2.76
+pkgdesc="A lightweight DNS, DHCP, RA, TFTP and PXE server"
+url="http://www.thekelleys.org.uk/dnsmasq/"
+source="http://www.thekelleys.org.uk/dnsmasq/$pkgname-$pkgver.tar.gz"
+
+download() {
+    if [ ! -d "$_builddir" ]; then
+        curl -sSL "$source" | tar xz -C "$buildcache"
+    fi
+}
+
+prepare() {
+    cd "$_builddir"
+}
+
+build() {
+    cd "$_builddir"
+    make -j"${threads}" PREFIX=/usr CFLAGS='-static -static-libgcc' LDFLAGS='-static' all
+}
+
+package() {
+    cd "$_builddir"
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
+    make -j1 PREFIX=/usr DESTDIR="$tmpdir" install || return 1
+
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+}

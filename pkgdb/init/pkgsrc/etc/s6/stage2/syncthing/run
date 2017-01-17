@@ -1,5 +1,0 @@
-#!/bin/sh
-
-IPV4_LAN="$(ip address show | grep eth0 | grep \"inet \" | awk '{ print $2 }' | awk -F/ '{ print $1 }')"
-
-exec /usr/bin/syncthing -gui-address="$IPV4_LAN"

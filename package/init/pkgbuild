@@ -1,0 +1,24 @@
+# package: init
+
+pkgname=init
+pkgver=$version
+pkgdesc="S6 init and runlevels management system for Redpill Linux"
+url="https://github.com/5haman/redpill"
+source="pkgsrc"
+
+download() {
+    cp -Ra "$_srcdir/pkgsrc" "$_builddir"
+}
+
+prepare() {
+    echo
+}
+
+build() {
+    cd "$_builddir"
+}
+
+package() {
+    cd "$_builddir"
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
+}

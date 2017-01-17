@@ -1,0 +1,37 @@
+# package: tmux
+
+pkgname=tmux
+pkgver=2.3
+pkgdesc="Tmux is a terminal multiplexer"
+url="https://tmux.github.io/"
+source="https://github.com/tmux/tmux/releases/download/$pkgver/$pkgname-$pkgver.tar.gz"
+
+download() {
+    if [ ! -d "$_builddir" ]; then
+        curl -sSL "$source" | tar xz -C "$buildcache"
+    fi
+}
+
+prepare() {
+    echo
+}
+
+build() {
+    local dest_prefix=/usr
+
+    cd "$_builddir"
+    ./configure --prefix=$dest_prefix CFLAGS="-I$dest_prefix/include -I$dest_prefix/include/ncurses" LDFLAGS="-static -L$dest_prefix/lib -L$dest_prefix/include/ncurses -L$dest_prefix/include" && \
+    env CPPFLAGS="-I$dest_prefix/include -I$dest_prefix/include/ncurses" LDFLAGS="-static -L$dest_prefix/lib -L$dest_prefix/include/ncurses -L$dest_prefix/include" make && \
+
+    make -j"${threads}"
+}
+
+package() {
+    cd "$_builddir"
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
+    make -j1 install DESTDIR="$tmpdir" || return 1
+
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+}

@@ -1,0 +1,46 @@
+# package: vim
+
+pkgname=vim
+pkgver=8.0.0178
+pkgdesc="advanced text editor"
+url="http://www.vim.org"
+source="https://github.com/$pkgname/$pkgname/archive/v$pkgver.tar.gz"
+
+_buildflags="--prefix=/usr \
+	--disable-luainterp \
+        --disable-python3interp \
+        --without-x \
+	--disable-shared \
+	--enable-static \
+        --disable-nls \
+        --enable-multibyte \
+        --enable-gui=no"
+
+download() {
+    if [ ! -d "$_builddir" ]; then
+        curl -sSL "$source" | tar xz -C "$buildcache"
+    fi
+}
+
+prepare() {
+    # Read vimrc from /etc/vim
+    cd "$_builddir"
+    echo '#define SYS_VIMRC_FILE "/etc/vim/vimrc"' >> src/feature.h
+}
+
+build() {
+    cd "$_builddir"
+    CFLAGS='-static -static-libgcc' \
+    LDFLAGS='-static' \
+    ./configure $_buildflags
+    make -j"${threads}"
+}
+
+package() {
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
+    make -j1 install DESTDIR="$tmpdir" || return 1
+
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+}

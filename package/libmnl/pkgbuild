@@ -1,0 +1,35 @@
+# package: libmnl
+
+pkgname=libmnl
+pkgver=1.0.4
+pkgdesc="Library for minimalistic netlink"
+url="http://www.netfilter.org/projects/libmnl/"
+source="http://www.netfilter.org/projects/$pkgname/files/$pkgname-$pkgver.tar.bz2"
+
+_buildflags="--disable-shared \
+             --prefix=/usr"
+
+download() {
+    if [ ! -d "$_builddir" ]; then
+         curl -sSL "$source" | tar xj -C "$buildcache"
+    fi
+}
+
+prepare() {
+    echo
+}
+
+build() {
+    cd "$_builddir"
+    ./configure $_buildflags
+    make -j"${threads}"
+}
+
+package() {
+    cd "$_builddir"
+    tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
+    make -j1 install DESTDIR="$tmpdir" || return 1
+    cd $tmpdir
+    find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
+    rm -rf $tmpdir
+}
