@@ -2,13 +2,11 @@
 
 set -e; [ "$DEBUG" == "true" ] && set -x
 
-log() {
-    echo $'\e['"1;31m$(date "+%Y-%m-%d %H:%M:%S") [$(basename $0)] ${@}"$'\e[0m'
-}
-
-fstype=${1:-xfs}
+fstype=xfs
 su=512k; sw=1;
 opts="defaults,noatime,discard,nobarrier"
+label_home="rp-home"
+label_data="rp-data"
 
 findfreespace() {
     local space=0
@@ -18,7 +16,7 @@ findfreespace() {
     for disk in $disklist; do
         freespace=$(echo -ne "v\nq\n" | fdisk /dev/$disk | grep "unallocated" | cut -d ' ' -f 5)
         freemb=$((($freespace*512)/1024/1024))
-        log "/dev/$disk have $freemb MB unallocated"
+        echo "/dev/$disk have $freemb MB unallocated"
 
         if [ $freemb -gt $space ] && [ $freemb -gt 1024 ]; then 
             space=$freemb
@@ -29,19 +27,27 @@ findfreespace() {
     freespace=$space
 }
 
+disklabels() {
+    local label="$1"
+
+    disklist=$(cat /proc/partitions | grep -vE "ram|loop|sr|major|^$" | awk '{ print $4 }' | tr "\n" " ")
+    for disk in $disklist; do
+        if [ $(dd if=/dev/$disk of=/dev/stdout bs=512 count=1 2>/dev/null | grep $label | wc -l) == 1 ]; then
+            echo "/dev/$disk"
+            return
+        fi
+    done
+}
+
 formatdisk() {
     homesize="$((($freespace*20)/100))"
     (echo n; echo p; echo 1; echo; echo "+${homesize}M"; echo n; echo p; echo 2; echo; echo; echo; echo w) | fdisk "$device" &>/dev/null
-    if [ "$fstype" == "xfs" ]; then
-        log "Formatting ${device}1 for /home"
-        mkfs.xfs -L "dvm-home" -d su=$su,sw=$sw -l su=$su -f "${device}1" &>/dev/null
-        log "Formatting ${device}2 for data"
-        mkfs.xfs -L "dvm-data" -d su=$su,sw=$sw -l su=$su -f "${device}2" &>/dev/null
-    fi
-    if [ "$fstype" == "ext4" ]; then
-        log "Formatting to ext4 not implemented yet"
-        #mkfs.ext4 -E stripe-width=256 "$device"
-    fi
+    
+    echo "Formatting ${device}1 for /home"
+    mkfs.xfs -q -L "$label_home" -d su=$su,sw=$sw -l su=$su -f "${device}1" &>/dev/null
+    
+    echo "Formatting ${device}2 for /var"
+    mkfs.xfs -q -L "$label_data" -d su=$su,sw=$sw -l su=$su -f "${device}2" &>/dev/null
 }
 
 remount() {
@@ -52,7 +58,6 @@ remount() {
     cd "$2"
     find | cpio -d -u -m -p "$tmpmount"
     mount -o move "$tmpmount" "$2"
-    #ln -sf "$tmpmount" "$(basename $2)"
 
     rm -rf $tmpmount
 }
@@ -60,37 +65,32 @@ remount() {
 # main script
 
 # check if we already have formatted partitions
-part_data=$(blkid | grep "LABEL=\"dvm-data\"" | awk '{ print $1 }' | tr -d ':')
-part_home=$(blkid | grep "LABEL=\"dvm-home\"" | awk '{ print $1 }' | tr -d ':')
+part_data=$(disklabels $label_data)
+part_home=$(disklabels $label_home)
 
 if [ "$part_home" == "" ] || [ "$part_data" == "" ]; then
     # look for disks with more than 1GB of free space available
     findfreespace
 
     if [ $freespace -gt 1024 ]; then
-        log "Using $device with $freespace MB for persistent storage"
+        echo "Using $device with $freespace MB for persistent storage"
         formatdisk
     else
-        log "No free disks found, aborting"
-	exit 1
+        echo "No free disks found, aborting"
+	exit 0
     fi
 fi
 
 # remount partitions
 if ! mountpoint -q /home; then
-    log "Remounting /home"
-    part_home=$(blkid | grep "LABEL=\"dvm-home\"" | awk '{ print $1 }' | tr -d ':')
+    echo "Remounting /home"
     remount "${part_home}" /home
 fi
 
 if ! mountpoint -q /var; then
-    log "Remounting /var"
-    part_data=$(blkid | grep "LABEL=\"dvm-data\"" | awk '{ print $1 }' | tr -d ':')
+    echo "Remounting /var"
     remount "${part_data}" /var
 fi
 
 sync
-
-log "Finished succesfully"
- 
 exit 0

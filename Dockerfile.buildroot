@@ -1,0 +1,32 @@
+FROM golang:1.7
+MAINTAINER Sergey Shyman
+
+ARG BUILDDIR
+ARG BUILDROOT_VER
+
+ENV GOPATH=/opt/build/local/go \
+    PATH=$GOPATH/bin:$PATH \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8
+
+RUN echo "locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8" \
+     | debconf-set-selections \
+    && echo "locales locales/default_environment_locale select en_US.UTF-8" \
+     | debconf-set-selections \
+    && apt-get -q update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -q -y \
+	build-essential libncurses-dev rsync unzip bzip2 \
+	bc gnupg python libc6-i386 cpio wget locales \
+	git-core less \
+    && mkdir -p $BUILDDIR \
+    && curl -sSL https://buildroot.org/downloads/buildroot-${BUILDROOT_VER}.tar.bz2 | tar xj -C $BUILDDIR
+
+COPY config/buildroot/package/busybox $BUILDDIR/buildroot-${BUILDROOT_VER}/package/busybox
+COPY config/buildroot/package/docker-containerd $BUILDDIR/buildroot-${BUILDROOT_VER}/package/docker-containerd
+COPY config/buildroot/package/docker-engine $BUILDDIR/buildroot-${BUILDROOT_VER}/package/docker-engine
+COPY config/buildroot/package/xfsprogs $BUILDDIR/buildroot-${BUILDROOT_VER}/package/xfsprogs
+COPY bin/buildroot.sh /
+COPY config/initfs/remove.files /tmp/
+
+WORKDIR "${BUILDDIR}/buildroot-${BUILDROOT_VER}"

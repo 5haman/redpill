@@ -1,0 +1,51 @@
+#!/bin/sh
+
+set -x
+
+zcompr="lzo"
+newroot="/newroot"
+root_ro="/mnt/root_ro"
+root_rw="/mnt/overlay"
+su=256k; sw=1;
+opts="noatime,discard,nobarrier"
+
+init_zram() {
+    echo $((128*1024*1024)) > /sys/block/zram0/disksize
+    echo $((512*1024*1024)) > /sys/block/zram1/disksize
+    echo $((512*1024*1024)) > /sys/block/zram2/disksize
+  
+    mkfs.xfs -q -L "rp-root" -d su=$su,sw=$sw -l su=$su -f "/dev/zram0"
+    mkfs.xfs -q -L "rp-overlay" -d su=$su,sw=$sw -l su=$su -f "/dev/zram1"
+    
+    mount -t xfs -o "$opts" /dev/zram0 "$root_ro"
+    mount -t xfs -o "$opts" /dev/zram1 "$root_rw"
+
+    mkdir -p "$root_ro/dev" "$root_ro/proc" "$root_ro/sys" "$root_ro/run"
+    (rsync -arv --exclude=/dev --exclude=/proc --exclude=/sys --exclude=/newroot --exclude=/run --exclude=/mnt / "$root_ro") &>/dev/null
+}
+
+init_overlay() {
+    mkdir -p "$newroot" "$root_rw/root" "$root_rw/work"
+    mkdir -p "$newroot/$root_rw/root" "$newroot/$root_rw/work"
+
+    mount -t overlay -o lowerdir=$root_ro,upperdir=$root_rw/root,workdir=$root_rw/work overlay "$newroot"
+    
+    cat /proc/mounts | while read DEV DIR TYPE OPTS ; do
+        if [ "$DIR" != "/" -a "$DIR" != "$newroot" -a "$DIR" != "/dev/pts" -a "$DIR" != "/dev/shm" -a -d "$DIR" ]; then
+            mkdir -p "$newroot/$DIR"
+            mount -o move $DIR "$newroot/$DIR"
+        fi
+    done
+}
+
+# main script
+cd /       
+mkdir -p "$newroot" "$root_ro" "$root_rw"
+
+modprobe -q zram num_devices=4
+
+init_zram
+init_overlay
+sync
+
+exit 0

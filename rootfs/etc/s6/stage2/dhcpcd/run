@@ -1,0 +1,5 @@
+#!/bin/sh
+
+source /etc/default/dhcpcd
+
+exec /sbin/dhcpcd $DHCPCD_ARGS

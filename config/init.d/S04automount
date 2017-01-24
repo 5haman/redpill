@@ -1,0 +1,84 @@
+#!/bin/sh
+#
+# Automatically format and mount persistent storage
+#
+
+
+start() {
+  echo -n "Automounting: "
+
+  fdisk -l /dev/sda | grep -q "Unknown"
+  if [ $? -eq 0 ]; then
+    (echo d;echo n; echo p; echo 1; echo ;echo +50M; echo n; echo p; echo 2;echo ;echo +1024M; echo t; echo 2; echo 82; echo n; echo p; echo 3; echo ;echo ;echo w) | fdisk /dev/sda
+    local timer=0
+    while [ "$timer" -lt 10 -a \(! -b "/dev/sda1" -o ! -b "/dev/sda2" -o ! -b "/dev/sda3" \)]; do
+      timer=$((timer + 1))
+      sleep 1
+    done
+    mkfs.ext4 /dev/sda1
+    mkswap /dev/sda2
+    mkfs.btrfs -m single /dev/sda3
+  fi
+
+  if [ -b "/dev/sda1" ]; then
+    mkdir -p /mnt/overlay
+    mount /dev/sda1 /mnt/overlay 2>/dev/null
+    mkdir -p /mnt/overlay/etc
+    mkdir -p /mnt/overlay/work/etc
+    mkdir -p /mnt/overlay/usr/bin
+    mkdir -p /mnt/overlay/work/usr/bin
+    mount -t overlay overlay -o lowerdir=/etc,upperdir=/mnt/overlay/etc,workdir=/mnt/overlay/work/etc /etc
+    mount -t overlay overlay -o lowerdir=/usr/bin,upperdir=/mnt/overlay/usr/bin,workdir=/mnt/overlay/work/usr/bin /usr/bin
+  fi
+
+  if [ -b "/dev/sda2" ]; then
+    swapon /dev/sda2
+  fi
+
+  if [ -b "/dev/sda3" ]; then
+    mkdir -p /var/lib/docker
+    mount -o noatime,discard,ssd,autodefrag /dev/sda3 /var/lib/docker 2>/dev/null
+  fi
+
+  local ssh_key=$(cat /proc/cmdline | sed -n 's/^.*ssh_key=\([^ ]\+\).*$/\1/p' | base64 -d)
+  mkdir -p /home/docker/.ssh
+  echo "$ssh_key" > /home/docker/.ssh/authorized_keys
+  chown -R docker:docker /home/docker/.ssh
+  chmod 0700 /home/docker/.ssh
+  chmod 0600 /home/docker/.ssh/authorized_keys
+
+  local user_name=$(cat /proc/cmdline | sed -n 's/^.*user_name=\([^ ]\+\).*$/\1/p')
+  local user_id=$(cat /proc/cmdline | sed -n 's/^.*user_id=\([^ ]\+\).*$/\1/p')
+  mkdir -p "/Users/${user_name}"
+  cut -d: -f1 /etc/passwd | grep -q "$user_name"
+  if [ $? -ne 0 ]; then
+    adduser -u "$user_id" -G staff -s /bin/sh -D -h "/Users/${user_name}" "$user_name"
+  fi
+
+  echo "OK"
+}
+
+stop() {
+  echo ""
+}
+
+restart() {
+  echo ""
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart|reload)
+    restart
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
+exit $?

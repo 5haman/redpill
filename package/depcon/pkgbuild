@@ -5,22 +5,22 @@ pkgver=0.9.3
 pkgdesc="Docker blue-green/deployment/management supporting Mesos/Marathon and Compose"
 url="http://depcon.containx.io/"
 source="https://github.com/ContainX/depcon/releases/download/v$pkgver/$pkgname_$pkgver_linux_amd64.tar.gz"
+source="https://github.com/ContainX/depcon/releases/download/v0.9.3/depcon_0.9.3_linux_amd64.tar.gz"
 
 download() {
-    cd "$pkgdir"
     if [ ! -d "$_builddir" ]; then
         curl -sSL "$source" | tar xz -C "$buildcache"
-        mv $pkgname_$pkgver_linux_amd64 $pkgname-$pkgver
+        cd "$buildcache"
+        mv "${pkgname}_${pkgver}_linux_amd64" "$pkgname-$pkgver"
     fi
 }
 
 prepare() {
-		echo
+    echo
 }
 
 build() {
-    cd "$_builddir"
-    sh -c "strip --strip-all $pkgname; upx --best --ultra-brute $pkgname; exit 0"
+    echo
 }
 
 package() {

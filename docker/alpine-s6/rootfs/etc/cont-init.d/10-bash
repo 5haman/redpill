@@ -1,0 +1,7 @@
+#!/usr/bin/with-contenv bash
+
+export CONT_ENV="${CONT_ENV:-default}"
+
+if [ ! -f /root/.bashrc ]; then
+    cp /etc/bash/bashrc /root/.bashrc
+fi

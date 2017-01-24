@@ -1,0 +1,13 @@
+DNSMASQ_ARGS="--user=dnsmasq \
+        --keep-in-foreground \
+        --no-resolv \
+        --no-poll \
+        --server=8.8.8.8 \
+        --server=8.8.4.4 \
+        --all-servers \
+        --listen-address=127.0.0.1 \
+        --port=53 \
+        --no-dhcp-interface \
+        --cache-size=500 \
+        --local-service \
+        --dns-loop-detect"

@@ -1,0 +1,23 @@
+#!/bin/sh
+
+echo "[dnsmasq] starting..."
+test -x /usr/sbin/dnsmasq || exit 1
+
+echo "nameserver 127.0.0.1" > /etc/resolv.conf
+
+cmd="/usr/sbin/dnsmasq --user=root \
+	--keep-in-foreground \
+	--no-resolv \
+	--no-poll \
+	--server=8.8.8.8 \
+	--server=8.8.4.4 \
+	--all-servers \
+	--listen-address=127.0.0.1 \
+	--port=53 \
+	--no-dhcp-interface \
+	--pid-file=/var/run/dnsmasq.pid \
+	--cache-size=500 \
+	--local-service \
+	--dns-loop-detect"
+
+exec $cmd

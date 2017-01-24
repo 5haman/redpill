@@ -1,0 +1,1 @@
+DROPBEAR_ARGS="-K 180 -W 256000 -R -F -E -B -p 0.0.0.0:22"

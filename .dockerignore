@@ -1,6 +1,8 @@
 .git
 docs
 dist
-pkgdb
-pkgcache
-vendor
+local/build
+local/buildroot
+local/go
+local/iso
+local/package

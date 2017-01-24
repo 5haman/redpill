@@ -1,0 +1,7 @@
+foreground {
+    mkswap /dev/zram2
+}
+
+foreground {
+    swapon /dev/zram2
+}

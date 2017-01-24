@@ -1,30 +1,29 @@
-FROM alpine:3.4
+FROM alpine:edge
 MAINTAINER Sergey Shyman
 
+ENV GOPATH=/opt/build/local/go \
+    PATH=$GOPATH/bin:$PATH \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8
+
 # Install builder packages
-RUN echo "http://dl-5.alpinelinux.org/alpine/v3.5/main" > /etc/apk/repositories \
-    && echo "http://dl-5.alpinelinux.org/alpine/v3.5/community" >> /etc/apk/repositories \
-    && echo "http://dl-4.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
-    && apk -U --no-cache add argp-standalone autoconf automake bash \
-           bc binutils bison bsd-compat-headers busybox-initscripts \
-           coreutils cpio curl emacs file flex g++ gcc git gzip xz \
-           go grep kbd kbd-misc linux-headers make patch sed syslinux \
-           musl-dev ncurses ocaml perl sed tar libtool squashfs-tools xorriso
-
-#    && curl -sSL https://github.com/lalyos/docker-upx/releases/download/v3.91/upx \
-#           -o /usr/bin/upx \
-#    && chmod +x /usr/bin/upx \
-#    && rm -f /usr/lib/libc.so
-
-COPY bin/* /usr/bin/
-COPY bin/diskmount /sbin
+RUN apk -U update \
+    && apk -U upgrade \
+    && apk -U --no-cache add bash \
+           binutils busybox-initscripts rsync cpio \
+           bc coreutils curl file g++ gcc git xz \
+           go grep linux-headers make patch sed syslinux \
+           musl-dev ncurses perl tar xorriso
 
 ARG version
-ARG buildroot
-ARG buildcache
 ARG DEBUG
+ARG BUILDDIR
 ARG KERNELVERSION
 
-WORKDIR "${buildroot}"
+ADD bin/entrypoint.sh /
+ADD bin/pill /sbin
 
-ENTRYPOINT ["/usr/bin/entrypoint.sh"]
+WORKDIR "$BUILDDIR"
+
+ENTRYPOINT ["/entrypoint.sh"]

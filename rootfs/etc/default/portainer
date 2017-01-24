@@ -1,0 +1,1 @@
+PORTAINER_ARGS="-p '0.0.0.0:80' -a /usr/share/portainer -d /usr/share/portainer"

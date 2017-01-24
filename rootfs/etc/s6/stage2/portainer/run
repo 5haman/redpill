@@ -1,0 +1,5 @@
+#!/bin/sh
+
+source /etc/default/portainer
+
+exec -/usr/bin/portainer -p "0.0.0.0:80" -a /usr/share/portainer -d /usr/share/portainer

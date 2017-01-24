@@ -1,0 +1,32 @@
+#!/bin/execlineb -S0
+#
+# Early init stage
+# Init modules and set system params
+# then switch root and run stage1
+
+/bin/cd /
+/bin/export PATH "/usr/bin:/usr/sbin:/bin:/sbin"
+
+umask 022
+
+# load modules
+foreground {
+    if { s6-test -e /etc/modules }
+    redirfd -r 0 /etc/modules
+    pipeline { s6-grep -vF -- "#" }
+    forstdin -nCd"\n" -- mod
+    importas -ui -D "" mod mod
+    modprobe -q $mod
+}
+
+# mount filesystems
+foreground {
+    if { mount /proc }
+    if { mount /sys }
+    if { mount /dev }
+    if { mount /var/run }
+}
+
+if { /etc/s6/init/overlay }
+exec -c
+busybox switch_root /newroot /etc/s6/init/stage1

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+source /etc/default/dnsmasq
+
+exec /usr/sbin/dnsmasq $DNSMASQ_ARGS --pid-file=/var/run/dnsmasq.pid 2>&1

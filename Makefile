@@ -1,69 +1,101 @@
-NAME	      = redpill
-VERSION       = 0.2
-KERNELVERSION = 4.4.39+
-VOLUME        = /opt/build
-CACHE         = $(HOME)/.cache/redpill
-DEBUG         = false
+NAME = redpill
+V = 0.2
+FULLNAME = $(NAME):$(V)
 
-FULLNAME  = $(NAME):$(VERSION)
-DOCKER    = $(shell which docker)
-PYTHON    = $(shell which python)
+DEBUG = false
+BUILDROOT_VER = 2016.11.1
+LINUX = 4.4.39+
+
+WORKDIR  = $(PWD)/local
+CACHE    = $(WORKDIR)/build
+CACHEPKG = $(WORKDIR)/package
+BUILDROOT= $(WORKDIR)/buildroot
+ROOTFS   = $(WORKDIR)/rootfs
+ISODIR   = $(WORKDIR)/iso
+BUILDDIR = /opt/build
+
+DOCKER=$(shell which docker)
+PYTHON=$(shell which python)
 
 default: all
 
-all: clean build dist www
-
-build:
-	$(DOCKER) build \
-		--build-arg buildroot=$(VOLUME) \
-		--build-arg buildcache=$(CACHE) \
-		--build-arg version=$(VERSION) \
-		--build-arg KERNELVERSION=$(KERNELVERSION) \
-		--build-arg DEBUG=$(DEBUG) \
-		-t $(FULLNAME) .
-
-dist:
-	$(DOCKER) run -it --rm \
-		-v $(CACHE):$(CACHE) \
-		-v $(PWD):$(VOLUME) \
-		-e KERNELVERSION=$(KERNELVERSION) \
-		-e DEBUG=$(DEBUG) \
-		-e buildroot=$(VOLUME) \
-	        -e buildcache=$(CACHE) \
-	        -e version=$(VERSION) \
-		$(FULLNAME) builder
+all: clean buildroot build dist www
 
 info:
+	@echo " => Installed binaries:"
 	@echo
-	@echo "Package cache: $(PWD)/pkgcache"
-	@ls -la "$(PWD)/pkgcache"
-	@echo
-	@echo "Build cache: $(CACHE)"
+	@echo " => Build cache: $(CACHE)"
 	@ls -la "$(CACHE)"
 	@echo
+	@echo " => Package cache: $(CACHEPKG)"
+	@ls -la "$(CACHEPKG)"
+	@echo
 
-run:
+buildroot:
+	$(DOCKER) build \
+	    --build-arg BUILDROOT_VER=$(BUILDROOT_VER) \
+	    --build-arg BUILDDIR=$(BUILDDIR) \
+	    -t $(NAME)-buildroot:$(V) -f Dockerfile.buildroot .
+
+	mkdir -p $(BUILDROOT)
+	rm -rf $(ROOTFS)
+
+	cp -f config/buildroot/.config $(BUILDROOT)/.config \
+	&& $(DOCKER) run -it --rm \
+	    -v $(ROOTFS):/rootfs \
+	    -v $(BUILDROOT):$(BUILDDIR)/output \
+    	    $(NAME)-buildroot:$(V) \
+	    /buildroot.sh \
+	&& cp -f $(BUILDROOT)/.config config/buildroot/.config
+
+brshell:
 	$(DOCKER) run -it --rm \
-		-v $(CACHE):$(CACHE) \
-		-v $(PWD):$(VOLUME) \
-		-e KERNELVERSION=$(KERNELVERSION) \
-		-e DEBUG=$(DEBUG) \
-		-e buildroot=$(VOLUME) \
-	        -e buildcache=$(CACHE) \
-	        -e version=$(VERSION) \
-		$(FULLNAME)
+	    -v $(ROOTFS):/rootfs \
+	    -v $(BUILDROOT):$(BUILDDIR)/output \
+    	    $(NAME)-buildroot:$(V) \
+	    bash
+	
+build:
+	$(DOCKER) build \
+	    --build-arg version=$(V) \
+	    --build-arg KERNELVERSION=$(LINUX) \
+	    --build-arg BUILDDIR=$(BUILDDIR) \
+	    --build-arg DEBUG=$(DEBUG) \
+	    -t $(FULLNAME) .
+
+dist:
+	rm -rf $(ISODIR)
+
+	$(DOCKER) run -it --rm \
+	    -v $(ISODIR):/iso \
+	    -v $(ROOTFS):/rootfs \
+	    -v $(PWD):$(BUILDDIR)\
+            -e version=$(V) \
+	    -e KERNELVERSION=$(LINUX) \
+	    -e DEBUG=$(DEBUG) \
+	    $(FULLNAME) $(BUILDDIR)/bin/make_iso.sh
+
+shell:
+	$(DOCKER) run -it --rm \
+	    -v $(ISODIR):/iso \
+	    -v $(ROOTFS):/rootfs \
+	     -v $(PWD):$(BUILDDIR) \
+            -e version=$(V) \
+	    -e KERNELVERSION=$(LINUX) \
+	    -e DEBUG=$(DEBUG) \
+	    $(FULLNAME)
 
 clean:
-	rm -f pkgcache/init-*.pkg
-	rm -f pkgcache/filesystem-*.pkg
-	rm -rf $(CACHE)/iso $(CACHE)/rootfs
-	rm -rf $(CACHE)/init-* $(CACHE)/filesystem-*
+	rm -rf $(CACHEPKG)/init* \
+               $(CACHEPKG)/filesystem* \
+               $(CACHEPKG)/syslinux* \
+               $(CACHE)/init* \
+               $(CACHE)/filesystem* \
+               $(ISODIR) \
+               $(ROOTFS)
 
-test:
-	mv .build/initrd .
-	$(DOCKER) build -t $(FULLNAME)-test -f Dockerfile.test .
-	mv initrd .build
-	$(DOCKER) run -it --rm $(FULLNAME)-test
+brclean:	
+	(cd local/buildroot/build && find -type d -maxdepth 1 | grep -vE "buildroot|toolchain|linux-headers|host-" | xargs rm -rf) || true
 
 www:
 	ls -la dist

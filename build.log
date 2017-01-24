@@ -1,0 +1,1133 @@
+rm -rf /home/shaman/projects/redpill/local/package/init* \
+               /home/shaman/projects/redpill/local/package/filesystem* \
+               /home/shaman/projects/redpill/local/package/syslinux* \
+               /home/shaman/projects/redpill/local/build/init* \
+               /home/shaman/projects/redpill/local/build/filesystem* \
+               /home/shaman/projects/redpill/local/iso \
+               /home/shaman/projects/redpill/local/rootfs
+/usr/bin/docker build \
+	    --build-arg BUILDROOT_VER=2016.11.1 \
+	    --build-arg BUILDDIR=/opt/build \
+	    -t redpill-buildroot:0.2 -f Dockerfile.buildroot .
+Sending build context to Docker daemon 557.1 kBSending build context to Docker daemon 1.114 MBSending build context to Docker daemon  1.26 MB
+Step 1 : FROM golang:1.7
+ ---> f3bdc5e851ce
+Step 2 : MAINTAINER Sergey Shyman
+ ---> Using cache
+ ---> ce68b9878703
+Step 3 : ARG BUILDDIR
+ ---> Using cache
+ ---> 473e1615fd37
+Step 4 : ARG BUILDROOT_VER
+ ---> Using cache
+ ---> ea1415712513
+Step 5 : ENV GOPATH /opt/build/local/go PATH $GOPATH/bin:$PATH LC_ALL en_US.UTF-8 LANG en_US.UTF-8 LANGUAGE en_US.UTF-8
+ ---> Using cache
+ ---> dba4e1d1ed5e
+Step 6 : RUN echo "locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8"      | debconf-set-selections     && echo "locales locales/default_environment_locale select en_US.UTF-8"      | debconf-set-selections     && apt-get -q update     && DEBIAN_FRONTEND=noninteractive apt-get install -q -y 	build-essential libncurses-dev rsync unzip bzip2 	bc gnupg python libc6-i386 cpio wget locales 	git-core less     && mkdir -p $BUILDDIR     && curl -sSL https://buildroot.org/downloads/buildroot-${BUILDROOT_VER}.tar.bz2 | tar xj -C $BUILDDIR
+ ---> Using cache
+ ---> 032a6130b85e
+Step 7 : COPY config/buildroot/package/busybox $BUILDDIR/buildroot-${BUILDROOT_VER}/package/busybox
+ ---> Using cache
+ ---> 337b578a2e43
+Step 8 : COPY config/buildroot/package/docker-containerd $BUILDDIR/buildroot-${BUILDROOT_VER}/package/docker-containerd
+ ---> Using cache
+ ---> 4ede05eddcb9
+Step 9 : COPY config/buildroot/package/docker-engine $BUILDDIR/buildroot-${BUILDROOT_VER}/package/docker-engine
+ ---> Using cache
+ ---> 92a0f8c620d0
+Step 10 : COPY config/buildroot/package/xfsprogs $BUILDDIR/buildroot-${BUILDROOT_VER}/package/xfsprogs
+ ---> Using cache
+ ---> eaccff782889
+Step 11 : COPY bin/buildroot.sh /
+ ---> Using cache
+ ---> 210759bc64b0
+Step 12 : COPY config/initfs/remove.files /tmp/
+ ---> Using cache
+ ---> ebe04cfa4393
+Step 13 : WORKDIR "${BUILDDIR}/buildroot-${BUILDROOT_VER}"
+ ---> Using cache
+ ---> ede39e62f4ab
+Successfully built ede39e62f4ab
+mkdir -p /home/shaman/projects/redpill/local/buildroot
+rm -rf /home/shaman/projects/redpill/local/rootfs
+cp -f config/buildroot/.config /home/shaman/projects/redpill/local/buildroot/.config \
+	&& /usr/bin/docker run -it --rm \
+	    -v /home/shaman/projects/redpill/local/rootfs:/rootfs \
+	    -v /home/shaman/projects/redpill/local/buildroot:/opt/build/output \
+    	    redpill-buildroot:0.2 \
+	    /buildroot.sh \
+	&& cp -f /home/shaman/projects/redpill/local/buildroot/.config config/buildroot/.config
++ BUILDDIR=/opt/build
++ make O=/opt/build/output nconfig
+  GEN     /opt/build/output/Makefile
+[?1049h[1;24r(B[m[4l[?7h[39;49m[?1h=[?25l[?1h=[39;49m(B[m[H[2J[2;10H(B[0;1;4m[35m/opt/build/output/.config - Buildroot 2016.11.1 Configuration[39m(B[m[?1h=
+ (0[0m[33mlqq(B[0;1m[32m Buildroot 2016.11.1 Configuration (0[0m[33mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[5;24H(0[0m[33m(B[0;7m    Target options  --->       [79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[6;28H(0[0m[33m(B[0mBuild options  --->[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[7;28H(0[0m[33m(B[0mToolchain  --->[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[8;28H(0[0m[33m(B[0mSystem configuration  --->[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[9;28H(0[0m[33m(B[0mKernel  --->[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[10;28H(0[0m[33m(B[0mTarget packages  --->[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[11;28H(0[0m[33m(B[0mFilesystem images  --->[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[12;28H(0[0m[33m(B[0mBootloaders  --->[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[13;28H(0[0m[33m(B[0mHost utilities  --->[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[14;28H(0[0m[33m(B[0mLegacy config options  --->[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mx[39m(B(B[m[79G(0[0m[33mx[39m(B(B[m
+ (0[0m[33mmqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj[39m(B(B[m[2;71H(0[0m[33m[39m(B(B[m[24;3H(B[0;1mF1(B[0;7m[33mHelp(0[0m[33mq(B[0;1mF2(B[0;7m[33mSymInfo(0[0m[33mq(B[0;1mF3(B[0;7m[33mHelp 2(0[0m[33mq(B[0;1mF4(B[0;7m[33mShowAll(0[0m[33mq(B[0;1mF5(B[0;7m[33mBack(0[0m[33mq(B[0;1mF6(B[0;7m[33mSave(0[0m[33mq(B[0;1mF7(B[0;7m[33mLoad(0[0m[33mq(B[0;1mF8(B[0;7m[33mSymSearch(0[0m[33mq(B[0;1mF9(B[0;7m[33mExit[2;71H[39m(B[m[?1h=[5;23H[2;71H[H[2J[24;1H[?12l[?25h[?1049l[?1l>+ make O=/opt/build/output all
+/usr/bin/make -j1 O=/opt/build/output HOSTCC="/usr/bin/gcc" HOSTCXX="/usr/bin/g++" silentoldconfig
+make[1]: Entering directory '/opt/build/buildroot-2016.11.1'
+  GEN     /opt/build/output/Makefile
+BR2_DEFCONFIG='' KCONFIG_AUTOCONFIG=/opt/build/output/build/buildroot-config/auto.conf KCONFIG_AUTOHEADER=/opt/build/output/build/buildroot-config/autoconf.h KCONFIG_TRISTATE=/opt/build/output/build/buildroot-config/tristate.config BR2_CONFIG=/opt/build/output/.config HOST_GCC_VERSION="4 9" BUILD_DIR=/opt/build/output/build SKIP_LEGACY= /opt/build/output/build/buildroot-config/conf --silentoldconfig Config.in
+make[1]: Leaving directory '/opt/build/buildroot-2016.11.1'
+[7m>>> docker-containerd v0.2.5 Building[27m
+cd /opt/build/output/build/docker-containerd-v0.2.5; GOARCH=amd64 GOROOT="/opt/build/output/host/usr/lib/go" CC="/opt/build/output/host/usr/bin/x86_64-redpill-linux-musl-gcc" CXX="/opt/build/output/host/usr/bin/x86_64-redpill-linux-musl-g++" GOTOOLDIR="/opt/build/output/host/usr/lib/go/pkg/tool/linux_amd64" CGO_ENABLED=1 GOBIN="/opt/build/output/build/docker-containerd-v0.2.5/bin" GOPATH=""/opt/build/output/build/docker-containerd-v0.2.5/vendor"" /opt/build/output/host/usr/bin/go build -v -o /opt/build/output/build/docker-containerd-v0.2.5/bin/ctr -ldflags "-X github.com/docker/containerd.GitCommit=v0.2.5 -extldflags '-static'" ./ctr
+github.com/Sirupsen/logrus
+github.com/docker/containerd
+github.com/golang/protobuf/proto
+golang.org/x/net/context
+golang.org/x/net/http2/hpack
+golang.org/x/net/internal/timeseries
+google.golang.org/grpc/codes
+github.com/codegangsta/cli
+runtime/cgo
+google.golang.org/grpc/grpclog
+google.golang.org/grpc/internal
+google.golang.org/grpc/metadata
+google.golang.org/grpc/naming
+github.com/opencontainers/runtime-spec/specs-go
+github.com/docker/containerd/specs
+# runtime/cgo
+cannot load imported symbols from ELF file $WORK/runtime/cgo/_obj/_cgo_.o: no symbol section
+github.com/golang/protobuf/ptypes/timestamp
+github.com/golang/protobuf/ptypes/duration
+github.com/golang/protobuf/ptypes
+package/pkg-generic.mk:216: recipe for target '/opt/build/output/build/docker-containerd-v0.2.5/.stamp_built' failed
+make: *** [/opt/build/output/build/docker-containerd-v0.2.5/.stamp_built] Error 2
++ rm -rf '/rootfs/*'
++ rsync -avr /opt/build/output/target/ /rootfs/
+sending incremental file list
+./
+THIS_IS_NOT_YOUR_ROOT_FILESYSTEM
+lib64 -> lib
+linuxrc -> bin/busybox
+bin/
+bin/ash -> busybox
+bin/bash
+bin/busybox
+bin/cat -> busybox
+bin/catv -> busybox
+bin/chattr -> busybox
+bin/chgrp -> busybox
+bin/chmod -> busybox
+bin/chown -> busybox
+bin/cp -> busybox
+bin/cpio -> busybox
+bin/date -> busybox
+bin/dd -> busybox
+bin/df -> busybox
+bin/dmesg -> busybox
+bin/dnsdomainname -> busybox
+bin/dumpkmap -> busybox
+bin/echo -> busybox
+bin/egrep -> busybox
+bin/false -> busybox
+bin/fatattr -> busybox
+bin/fdflush -> busybox
+bin/fgrep -> busybox
+bin/getopt -> busybox
+bin/grep -> busybox
+bin/gunzip -> busybox
+bin/gzip -> busybox
+bin/hostname -> busybox
+bin/iostat -> busybox
+bin/kill -> busybox
+bin/linux32 -> busybox
+bin/linux64 -> busybox
+bin/ln -> busybox
+bin/login -> busybox
+bin/ls -> busybox
+bin/lsattr -> busybox
+bin/mkdir -> busybox
+bin/mknod -> busybox
+bin/mktemp -> busybox
+bin/more -> busybox
+bin/mount -> busybox
+bin/mountpoint -> busybox
+bin/mt -> busybox
+bin/mv -> busybox
+bin/netstat -> busybox
+bin/nice -> busybox
+bin/pidof -> busybox
+bin/ping -> busybox
+bin/ping6 -> busybox
+bin/pipe_progress -> busybox
+bin/printenv -> busybox
+bin/ps -> busybox
+bin/pwd -> busybox
+bin/rm -> busybox
+bin/rmdir -> busybox
+bin/run-parts -> busybox
+bin/sed -> busybox
+bin/setarch -> busybox
+bin/setserial -> busybox
+bin/sh -> busybox
+bin/sleep -> busybox
+bin/stat -> busybox
+bin/stty -> busybox
+bin/su -> busybox
+bin/sync -> busybox
+bin/tar -> busybox
+bin/touch -> busybox
+bin/true -> busybox
+bin/umount -> busybox
+bin/uname -> busybox
+bin/usleep -> busybox
+bin/vi -> busybox
+bin/watch -> busybox
+bin/zcat -> busybox
+dev/
+dev/log -> ../tmp/log
+dev/pts/
+dev/shm/
+etc/
+etc/dhcpcd.conf
+etc/fstab
+etc/group
+etc/hosts
+etc/inputrc
+etc/mdev.conf
+etc/mtab -> ../proc/self/mounts
+etc/passwd
+etc/profile
+etc/protocols
+etc/resolv.conf -> ../tmp/resolv.conf
+etc/services
+etc/shadow
+etc/network/
+etc/network/if-down.d/
+etc/network/if-post-down.d/
+etc/network/if-pre-up.d/
+etc/network/if-pre-up.d/wait_iface
+etc/network/if-up.d/
+etc/profile.d/
+etc/profile.d/umask.sh
+lib/
+lib/libatomic.a
+lib/libatomic.la
+lib/libc.a
+lib/libcrypt.a
+lib/libdl.a
+lib/libm.a
+lib/libpthread.a
+lib/libresolv.a
+lib/librt.a
+lib/libutil.a
+lib/libxnet.a
+lib/rcrt1.o
+lib/dhcpcd/
+lib/dhcpcd/dhcpcd-run-hooks
+lib/dhcpcd/dhcpcd-hooks/
+lib/dhcpcd/dhcpcd-hooks/01-test
+lib/dhcpcd/dhcpcd-hooks/02-dump
+lib/dhcpcd/dhcpcd-hooks/20-resolv.conf
+lib/dhcpcd/dhcpcd-hooks/30-hostname
+media/
+mnt/
+opt/
+proc/
+root/
+run/
+sbin/
+sbin/blkid -> ../bin/busybox
+sbin/dhcpcd
+sbin/fdisk -> ../bin/busybox
+sbin/freeramdisk -> ../bin/busybox
+sbin/fsck -> ../bin/busybox
+sbin/fstrim -> ../bin/busybox
+sbin/getty -> ../bin/busybox
+sbin/halt -> ../bin/busybox
+sbin/hwclock -> ../bin/busybox
+sbin/ifconfig -> ../bin/busybox
+sbin/ifdown -> ../bin/busybox
+sbin/ifup -> ../bin/busybox
+sbin/inotifyd -> ../bin/busybox
+sbin/insmod -> ../bin/busybox
+sbin/ip -> ../bin/busybox
+sbin/ipaddr -> ../bin/busybox
+sbin/iplink -> ../bin/busybox
+sbin/iproute -> ../bin/busybox
+sbin/iprule -> ../bin/busybox
+sbin/iptunnel -> ../bin/busybox
+sbin/klogd -> ../bin/busybox
+sbin/loadkmap -> ../bin/busybox
+sbin/losetup -> ../bin/busybox
+sbin/lsmod -> ../bin/busybox
+sbin/mdev -> ../bin/busybox
+sbin/mkswap -> ../bin/busybox
+sbin/modprobe -> ../bin/busybox
+sbin/nameif -> ../bin/busybox
+sbin/pivot_root -> ../bin/busybox
+sbin/poweroff -> ../bin/busybox
+sbin/reboot -> ../bin/busybox
+sbin/rmmod -> ../bin/busybox
+sbin/route -> ../bin/busybox
+sbin/setconsole -> ../bin/busybox
+sbin/start-stop-daemon -> ../bin/busybox
+sbin/sulogin -> ../bin/busybox
+sbin/swapoff -> ../bin/busybox
+sbin/swapon -> ../bin/busybox
+sbin/switch_root -> ../bin/busybox
+sbin/sysctl -> ../bin/busybox
+sbin/syslogd -> ../bin/busybox
+sbin/uevent -> ../bin/busybox
+sbin/vconfig -> ../bin/busybox
+sys/
+tmp/
+usr/
+usr/lib64 -> lib
+usr/bin/
+usr/bin/[ -> ../../bin/busybox
+usr/bin/[[ -> ../../bin/busybox
+usr/bin/ar -> ../../bin/busybox
+usr/bin/awk -> ../../bin/busybox
+usr/bin/basename -> ../../bin/busybox
+usr/bin/bc
+usr/bin/blkdiscard -> ../../bin/busybox
+usr/bin/bunzip2 -> ../../bin/busybox
+usr/bin/bzcat -> ../../bin/busybox
+usr/bin/chrt -> ../../bin/busybox
+usr/bin/chvt -> ../../bin/busybox
+usr/bin/cksum -> ../../bin/busybox
+usr/bin/clear -> ../../bin/busybox
+usr/bin/cmp -> ../../bin/busybox
+usr/bin/crontab -> ../../bin/busybox
+usr/bin/cut -> ../../bin/busybox
+usr/bin/dc
+usr/bin/deallocvt -> ../../bin/busybox
+usr/bin/diff -> ../../bin/busybox
+usr/bin/dirname -> ../../bin/busybox
+usr/bin/dos2unix -> ../../bin/busybox
+usr/bin/du -> ../../bin/busybox
+usr/bin/env -> ../../bin/busybox
+usr/bin/expr -> ../../bin/busybox
+usr/bin/find -> ../../bin/busybox
+usr/bin/fold -> ../../bin/busybox
+usr/bin/free -> ../../bin/busybox
+usr/bin/fuser -> ../../bin/busybox
+usr/bin/head -> ../../bin/busybox
+usr/bin/hostid -> ../../bin/busybox
+usr/bin/id -> ../../bin/busybox
+usr/bin/install -> ../../bin/busybox
+usr/bin/ipcrm -> ../../bin/busybox
+usr/bin/ipcs -> ../../bin/busybox
+usr/bin/killall -> ../../bin/busybox
+usr/bin/less -> ../../bin/busybox
+usr/bin/logger -> ../../bin/busybox
+usr/bin/logname -> ../../bin/busybox
+usr/bin/lsof -> ../../bin/busybox
+usr/bin/lspci -> ../../bin/busybox
+usr/bin/lsusb -> ../../bin/busybox
+usr/bin/lzcat -> ../../bin/busybox
+usr/bin/lzma -> ../../bin/busybox
+usr/bin/md5sum -> ../../bin/busybox
+usr/bin/mesg -> ../../bin/busybox
+usr/bin/mkfifo -> ../../bin/busybox
+usr/bin/mkpasswd -> ../../bin/busybox
+usr/bin/nc -> ../../bin/busybox
+usr/bin/nohup -> ../../bin/busybox
+usr/bin/nsenter -> ../../bin/busybox
+usr/bin/nslookup -> ../../bin/busybox
+usr/bin/od -> ../../bin/busybox
+usr/bin/openvt -> ../../bin/busybox
+usr/bin/passwd -> ../../bin/busybox
+usr/bin/patch -> ../../bin/busybox
+usr/bin/printf -> ../../bin/busybox
+usr/bin/pstree -> ../../bin/busybox
+usr/bin/readlink -> ../../bin/busybox
+usr/bin/realpath -> ../../bin/busybox
+usr/bin/renice -> ../../bin/busybox
+usr/bin/reset -> ../../bin/busybox
+usr/bin/resize -> ../../bin/busybox
+usr/bin/seq -> ../../bin/busybox
+usr/bin/setkeycodes -> ../../bin/busybox
+usr/bin/setsid -> ../../bin/busybox
+usr/bin/sha1sum -> ../../bin/busybox
+usr/bin/sha256sum -> ../../bin/busybox
+usr/bin/sha3sum -> ../../bin/busybox
+usr/bin/sha512sum -> ../../bin/busybox
+usr/bin/shuf -> ../../bin/busybox
+usr/bin/sort -> ../../bin/busybox
+usr/bin/strings -> ../../bin/busybox
+usr/bin/tail -> ../../bin/busybox
+usr/bin/tee -> ../../bin/busybox
+usr/bin/test -> ../../bin/busybox
+usr/bin/time -> ../../bin/busybox
+usr/bin/top -> ../../bin/busybox
+usr/bin/tr -> ../../bin/busybox
+usr/bin/traceroute -> ../../bin/busybox
+usr/bin/truncate -> ../../bin/busybox
+usr/bin/tty -> ../../bin/busybox
+usr/bin/uniq -> ../../bin/busybox
+usr/bin/unix2dos -> ../../bin/busybox
+usr/bin/unlink -> ../../bin/busybox
+usr/bin/unlzma -> ../../bin/busybox
+usr/bin/unshare -> ../../bin/busybox
+usr/bin/unxz -> ../../bin/busybox
+usr/bin/unzip -> ../../bin/busybox
+usr/bin/uptime -> ../../bin/busybox
+usr/bin/uudecode -> ../../bin/busybox
+usr/bin/uuencode -> ../../bin/busybox
+usr/bin/vlock -> ../../bin/busybox
+usr/bin/wc -> ../../bin/busybox
+usr/bin/wget -> ../../bin/busybox
+usr/bin/which -> ../../bin/busybox
+usr/bin/whoami -> ../../bin/busybox
+usr/bin/whois -> ../../bin/busybox
+usr/bin/xargs -> ../../bin/busybox
+usr/bin/xz -> ../../bin/busybox
+usr/bin/xzcat -> ../../bin/busybox
+usr/bin/yes -> ../../bin/busybox
+usr/include/
+usr/include/argp.h
+usr/include/readline/
+usr/include/readline/chardefs.h
+usr/include/readline/history.h
+usr/include/readline/keymaps.h
+usr/include/readline/readline.h
+usr/include/readline/rlconf.h
+usr/include/readline/rlstdc.h
+usr/include/readline/rltypedefs.h
+usr/include/readline/tilde.h
+usr/info/
+usr/info/bc.info
+usr/info/dc.info
+usr/lib/
+usr/lib/libargp.a
+usr/lib/libhistory.a
+usr/lib/libreadline.a
+usr/lib/terminfo -> /usr/share/terminfo
+usr/man/
+usr/man/man1/
+usr/man/man1/bc.1
+usr/man/man1/dc.1
+usr/sbin/
+usr/sbin/addgroup -> ../../bin/busybox
+usr/sbin/adduser -> ../../bin/busybox
+usr/sbin/chpasswd -> ../../bin/busybox
+usr/sbin/chroot -> ../../bin/busybox
+usr/sbin/crond -> ../../bin/busybox
+usr/sbin/delgroup -> ../../bin/busybox
+usr/sbin/deluser -> ../../bin/busybox
+usr/sbin/dnsmasq
+usr/sbin/fbset -> ../../bin/busybox
+usr/sbin/fdformat -> ../../bin/busybox
+usr/sbin/i2cdetect -> ../../bin/busybox
+usr/sbin/i2cdump -> ../../bin/busybox
+usr/sbin/i2cget -> ../../bin/busybox
+usr/sbin/i2cset -> ../../bin/busybox
+usr/sbin/killall5 -> ../../bin/busybox
+usr/sbin/loadfont -> ../../bin/busybox
+usr/sbin/ntpd -> ../../bin/busybox
+usr/sbin/rdate -> ../../bin/busybox
+usr/sbin/readprofile -> ../../bin/busybox
+usr/sbin/setlogcons -> ../../bin/busybox
+usr/sbin/ubirename -> ../../bin/busybox
+usr/share/
+usr/share/dhcpcd/
+usr/share/dhcpcd/hooks/
+usr/share/dhcpcd/hooks/10-wpa_supplicant
+usr/share/dhcpcd/hooks/15-timezone
+usr/share/dhcpcd/hooks/29-lookup-hostname
+usr/share/doc/
+usr/share/doc/bash/
+usr/share/doc/bash/CHANGES
+usr/share/doc/bash/COMPAT
+usr/share/doc/bash/FAQ
+usr/share/doc/bash/INTRO
+usr/share/doc/bash/NEWS
+usr/share/doc/bash/POSIX
+usr/share/doc/bash/RBASH
+usr/share/doc/bash/README
+usr/share/doc/bash/bash.html
+usr/share/doc/bash/bashref.html
+usr/share/doc/readline/
+usr/share/doc/readline/CHANGES
+usr/share/doc/readline/INSTALL
+usr/share/doc/readline/README
+usr/share/info/
+usr/share/info/bash.info
+usr/share/info/history.info
+usr/share/info/readline.info
+usr/share/info/rluserman.info
+usr/share/locale/
+usr/share/locale/af/
+usr/share/locale/af/LC_MESSAGES/
+usr/share/locale/af/LC_MESSAGES/bash.mo
+usr/share/locale/bg/
+usr/share/locale/bg/LC_MESSAGES/
+usr/share/locale/bg/LC_MESSAGES/bash.mo
+usr/share/locale/ca/
+usr/share/locale/ca/LC_MESSAGES/
+usr/share/locale/ca/LC_MESSAGES/bash.mo
+usr/share/locale/cs/
+usr/share/locale/cs/LC_MESSAGES/
+usr/share/locale/cs/LC_MESSAGES/bash.mo
+usr/share/locale/da/
+usr/share/locale/da/LC_MESSAGES/
+usr/share/locale/da/LC_MESSAGES/bash.mo
+usr/share/locale/de/
+usr/share/locale/de/LC_MESSAGES/
+usr/share/locale/de/LC_MESSAGES/bash.mo
+usr/share/locale/el/
+usr/share/locale/el/LC_MESSAGES/
+usr/share/locale/el/LC_MESSAGES/bash.mo
+usr/share/locale/en@boldquot/
+usr/share/locale/en@boldquot/LC_MESSAGES/
+usr/share/locale/en@boldquot/LC_MESSAGES/bash.mo
+usr/share/locale/en@quot/
+usr/share/locale/en@quot/LC_MESSAGES/
+usr/share/locale/en@quot/LC_MESSAGES/bash.mo
+usr/share/locale/eo/
+usr/share/locale/eo/LC_MESSAGES/
+usr/share/locale/eo/LC_MESSAGES/bash.mo
+usr/share/locale/es/
+usr/share/locale/es/LC_MESSAGES/
+usr/share/locale/es/LC_MESSAGES/bash.mo
+usr/share/locale/et/
+usr/share/locale/et/LC_MESSAGES/
+usr/share/locale/et/LC_MESSAGES/bash.mo
+usr/share/locale/fi/
+usr/share/locale/fi/LC_MESSAGES/
+usr/share/locale/fi/LC_MESSAGES/bash.mo
+usr/share/locale/fr/
+usr/share/locale/fr/LC_MESSAGES/
+usr/share/locale/fr/LC_MESSAGES/bash.mo
+usr/share/locale/ga/
+usr/share/locale/ga/LC_MESSAGES/
+usr/share/locale/ga/LC_MESSAGES/bash.mo
+usr/share/locale/gl/
+usr/share/locale/gl/LC_MESSAGES/
+usr/share/locale/gl/LC_MESSAGES/bash.mo
+usr/share/locale/hr/
+usr/share/locale/hr/LC_MESSAGES/
+usr/share/locale/hr/LC_MESSAGES/bash.mo
+usr/share/locale/hu/
+usr/share/locale/hu/LC_MESSAGES/
+usr/share/locale/hu/LC_MESSAGES/bash.mo
+usr/share/locale/id/
+usr/share/locale/id/LC_MESSAGES/
+usr/share/locale/id/LC_MESSAGES/bash.mo
+usr/share/locale/it/
+usr/share/locale/it/LC_MESSAGES/
+usr/share/locale/it/LC_MESSAGES/bash.mo
+usr/share/locale/ja/
+usr/share/locale/ja/LC_MESSAGES/
+usr/share/locale/ja/LC_MESSAGES/bash.mo
+usr/share/locale/lt/
+usr/share/locale/lt/LC_MESSAGES/
+usr/share/locale/lt/LC_MESSAGES/bash.mo
+usr/share/locale/nl/
+usr/share/locale/nl/LC_MESSAGES/
+usr/share/locale/nl/LC_MESSAGES/bash.mo
+usr/share/locale/pl/
+usr/share/locale/pl/LC_MESSAGES/
+usr/share/locale/pl/LC_MESSAGES/bash.mo
+usr/share/locale/pt_BR/
+usr/share/locale/pt_BR/LC_MESSAGES/
+usr/share/locale/pt_BR/LC_MESSAGES/bash.mo
+usr/share/locale/ro/
+usr/share/locale/ro/LC_MESSAGES/
+usr/share/locale/ro/LC_MESSAGES/bash.mo
+usr/share/locale/ru/
+usr/share/locale/ru/LC_MESSAGES/
+usr/share/locale/ru/LC_MESSAGES/bash.mo
+usr/share/locale/sk/
+usr/share/locale/sk/LC_MESSAGES/
+usr/share/locale/sk/LC_MESSAGES/bash.mo
+usr/share/locale/sl/
+usr/share/locale/sl/LC_MESSAGES/
+usr/share/locale/sl/LC_MESSAGES/bash.mo
+usr/share/locale/sr/
+usr/share/locale/sr/LC_MESSAGES/
+usr/share/locale/sr/LC_MESSAGES/bash.mo
+usr/share/locale/sv/
+usr/share/locale/sv/LC_MESSAGES/
+usr/share/locale/sv/LC_MESSAGES/bash.mo
+usr/share/locale/tr/
+usr/share/locale/tr/LC_MESSAGES/
+usr/share/locale/tr/LC_MESSAGES/bash.mo
+usr/share/locale/uk/
+usr/share/locale/uk/LC_MESSAGES/
+usr/share/locale/uk/LC_MESSAGES/bash.mo
+usr/share/locale/vi/
+usr/share/locale/vi/LC_MESSAGES/
+usr/share/locale/vi/LC_MESSAGES/bash.mo
+usr/share/locale/zh_CN/
+usr/share/locale/zh_CN/LC_MESSAGES/
+usr/share/locale/zh_CN/LC_MESSAGES/bash.mo
+usr/share/locale/zh_TW/
+usr/share/locale/zh_TW/LC_MESSAGES/
+usr/share/locale/zh_TW/LC_MESSAGES/bash.mo
+usr/share/man/
+usr/share/man/man1/
+usr/share/man/man1/bash.1
+usr/share/man/man1/bashbug.1
+usr/share/man/man3/
+usr/share/man/man3/history.3
+usr/share/man/man3/readline.3
+usr/share/man/man5/
+usr/share/man/man5/dhcpcd.conf.5
+usr/share/man/man8/
+usr/share/man/man8/dhcpcd-run-hooks.8
+usr/share/man/man8/dhcpcd.8
+usr/share/man/man8/dnsmasq.8
+usr/share/terminfo/
+usr/share/terminfo/a/
+usr/share/terminfo/a/ansi
+usr/share/terminfo/l/
+usr/share/terminfo/l/linux
+usr/share/terminfo/p/
+usr/share/terminfo/p/putty
+usr/share/terminfo/p/putty-vt100
+usr/share/terminfo/s/
+usr/share/terminfo/s/screen
+usr/share/terminfo/v/
+usr/share/terminfo/v/vt100
+usr/share/terminfo/v/vt100-putty
+usr/share/terminfo/v/vt102
+usr/share/terminfo/v/vt200
+usr/share/terminfo/v/vt220
+usr/share/terminfo/x/
+usr/share/terminfo/x/xterm
+usr/share/terminfo/x/xterm-color
+usr/share/terminfo/x/xterm-xfree86
+var/
+var/cache -> ../tmp
+var/lock -> ../tmp
+var/log -> ../tmp
+var/run -> ../run
+var/spool -> ../tmp
+var/tmp -> ../tmp
+var/db/
+var/lib/
+var/lib/misc -> ../../tmp
+
+sent 14,954,067 bytes  received 3,898 bytes  29,915,930.00 bytes/sec
+total size is 14,933,225  speedup is 1.00
+++ cat /tmp/remove.files
+++ awk '{ print "/rootfs" $1 }'
+++ tr '\n' ' '
++ rm -rf /rootfs/THIS_IS_NOT_YOUR_ROOT_FILESYSTEM /rootfs/boot /rootfs/dev '/rootfs/etc/*-' /rootfs/etc/cachemgr.conf.default /rootfs/etc/dropbear '/rootfs/etc/errorpage.*' /rootfs/etc/init.d /rootfs/etc/inittab /rootfs/etc/resolv.conf /rootfs/etc/s6/inactive /rootfs/etc/squid.conf.documented /rootfs/etc/ssl /rootfs/linuxrc /rootfs/sbin/rvnamed-ng /rootfs/sbin/sfdisk /rootfs/sbin/swaplabel /rootfs/usr/bin/gpg-error /rootfs/usr/bin/mpicalc /rootfs/usr/bin/purge /rootfs/usr/bin/sqlite3 /rootfs/usr/bin/squidclient /rootfs/usr/bin/sudoreplay /rootfs/usr/bin/sudoreplay~ /rootfs/usr/bin/sudo~ /rootfs/usr/include /rootfs/usr/lib/execline /rootfs/usr/lib/libargp.a /rootfs/usr/lib/libhistory.a /rootfs/usr/lib/libreadline.a /rootfs/usr/lib/s6 /rootfs/usr/lib/s6-rc /rootfs/usr/lib/xtables /rootfs/usr/local/libexec /rootfs/usr/sbin/visudo~ '/rootfs/usr/sbin/xfs*' /rootfs/usr/share/applications /rootfs/usr/share/common-lisp /rootfs/usr/share/icons/silk /rootfs/usr/share/locale /rootfs/usr/share/pixmaps /rootfs/usr/share/mib.txt/var/cache /rootfs/var/lock /rootfs/var/log /rootfs/var/run /rootfs/var/spool /rootfs/var/tmp
++ find /rootfs/usr/libexec -type f
++ grep -vE 'log_db_daemon|unlinkd'
++ xargs rm -f
+find: `/rootfs/usr/libexec': No such file or directory
++ find /rootfs/usr/share/errors -type d
++ grep -vE 'en$|errors$|templates$'
++ xargs rm -rf
+find: `/rootfs/usr/share/errors': No such file or directory
++ cd /rootfs
++ mkdir -p etc/dropbear etc/s6 var/log var/lock opt libexec var/run/s6 var/cache
++ ln -s var/run run
++ cd /rootfs/etc
++ ln -sf s6 s6-rc
+++ mktemp -d /tmp/tclroot.XXX
++ tmpdir=/tmp/tclroot.jk4
++ cd /tmp/tclroot.jk4
++ curl -sSL http://distro.ibiblio.org/tinycorelinux/7.x/x86_64/release/distribution_files/rootfs64.gz
++ gunzip
++ cpio -f -i -H newc -d --no-absolute-filenames
+14095 blocks
++ rsync -avr /tmp/tclroot.jk4/dev/ /rootfs/dev/
+sending incremental file list
+created directory /rootfs/dev
+./
+agpgart
+atibm
+audio
+beep
+console
+core -> /proc/kcore
+fb0
+fd -> /proc/self/fd
+fd0
+fd0D360
+fd0D720
+fd0H1440
+fd0H1722
+flash -> sda1
+full
+hda
+hda1
+hda2
+hda3
+hda4
+hda5
+hda6
+hda7
+hda8
+hda9
+hdb
+hdb1
+hdb2
+hdb3
+hdb4
+hdb5
+hdb6
+hdb7
+hdb8
+hdb9
+hdc
+hdd
+inportbm
+kmem
+logibm
+loop0
+loop1
+loop2
+loop3
+loop4
+loop5
+loop6
+loop7
+mem
+null
+nvram
+port
+ppp
+psaux
+ptmx
+ram -> ram1
+ram0
+ram1
+ram2
+ram3
+ram4
+ram5
+ram6
+ram7
+random
+sda
+sda1
+sda2
+sda3
+sda4
+sda5
+sda6
+sda7
+sda8
+sda9
+sdb
+sdb1
+sdb2
+sdb3
+sdb4
+sdb5
+sdb6
+sdb7
+sdb8
+sdb9
+sr0
+sr1
+stderr -> /proc/self/fd/2
+stdin -> /proc/self/fd/0
+stdout -> /proc/self/fd/1
+tty
+tty0
+tty1
+tty2
+tty3
+tty4
+tty5
+tty6
+tty7
+ttyS0
+urandom
+vcs -> vcs0
+vcs0
+vcs1
+vcs2
+vcs3
+vcs4
+vcs5
+vcs6
+vcs7
+vcsa -> vcsa0
+vcsa0
+vcsa1
+vcsa2
+vcsa3
+vcsa4
+vcsa5
+vcsa6
+vcsa7
+zero
+input/
+input/event0
+input/event1
+input/event2
+input/mice
+input/mouse0
+input/ts0
+net/
+net/tun
+pts/
+shm/
+usb/
+usb/hiddev0
+usb/hiddev1
+usb/hiddev2
+usb/hiddev3
+usb/hiddev4
+usb/hiddev5
+usb/hiddev6
+
+sent 3,341 bytes  received 475 bytes  7,632.00 bytes/sec
+total size is 86  speedup is 0.02
++ rm -rf /tmp/tclroot.jk4
+/usr/bin/docker build \
+	    --build-arg version=0.2 \
+	    --build-arg KERNELVERSION=4.4.39+ \
+	    --build-arg BUILDDIR=/opt/build \
+	    --build-arg DEBUG=false \
+	    -t redpill:0.2 .
+Sending build context to Docker daemon 557.1 kBSending build context to Docker daemon 1.114 MBSending build context to Docker daemon 1.671 MBSending build context to Docker daemon 2.228 MBSending build context to Docker daemon 2.785 MBSending build context to Docker daemon 3.342 MBSending build context to Docker daemon 3.899 MBSending build context to Docker daemon 4.456 MBSending build context to Docker daemon 5.014 MBSending build context to Docker daemon 5.571 MBSending build context to Docker daemon 6.128 MBSending build context to Docker daemon 6.685 MBSending build context to Docker daemon 7.242 MBSending build context to Docker daemon 7.799 MBSending build context to Docker daemon 8.356 MBSending build context to Docker daemon 8.913 MBSending build context to Docker daemon  9.47 MBSending build context to Docker daemon 10.03 MBSending build context to Docker daemon 10.58 MBSending build context to Docker daemon 11.14 MBSending build context to Docker daemon 11.37 MB
+Step 1 : FROM alpine:edge
+ ---> dea7f8bab8fe
+Step 2 : MAINTAINER Sergey Shyman
+ ---> Using cache
+ ---> d67b82b8b36c
+Step 3 : ENV GOPATH /opt/build/local/go PATH $GOPATH/bin:$PATH LC_ALL en_US.UTF-8 LANG en_US.UTF-8 LANGUAGE en_US.UTF-8
+ ---> Using cache
+ ---> 0353f6a8a0b1
+Step 4 : RUN apk -U update     && apk -U upgrade     && apk -U --no-cache add bash            binutils busybox-initscripts rsync            bc coreutils curl file g++ gcc git xz            go grep linux-headers make patch sed syslinux            musl-dev ncurses perl tar xorriso
+ ---> Using cache
+ ---> 18aaffce6278
+Step 5 : ARG version
+ ---> Using cache
+ ---> f51003a6c99d
+Step 6 : ARG DEBUG
+ ---> Using cache
+ ---> ad46b90722a9
+Step 7 : ARG BUILDDIR
+ ---> Using cache
+ ---> 259ece08e68a
+Step 8 : ARG KERNELVERSION
+ ---> Using cache
+ ---> deefafe61e40
+Step 9 : ADD bin/entrypoint.sh /
+ ---> Using cache
+ ---> 48d626f20b14
+Step 10 : ADD bin/pill /sbin
+ ---> Using cache
+ ---> 77fa6329efd5
+Step 11 : WORKDIR "$BUILDDIR"
+ ---> Using cache
+ ---> eff11145e9b5
+Step 12 : ENTRYPOINT /entrypoint.sh
+ ---> Using cache
+ ---> b88dfa1ec32e
+Successfully built b88dfa1ec32e
+rm -rf /home/shaman/projects/redpill/local/iso
+/usr/bin/docker run -it --rm \
+	    -v /home/shaman/projects/redpill/local/iso:/iso \
+	    -v /home/shaman/projects/redpill/local/rootfs:/rootfs \
+	    -v /home/shaman/projects/redpill:/opt/build\
+            -e version=0.2 \
+	    -e KERNELVERSION=4.4.39+ \
+	    -e DEBUG=false \
+	    redpill:0.2 /opt/build/bin/make_iso.sh
+[1;31m2017-01-24 11:00:44 [make_iso.sh] Installing packages[0m
+[1;31m2017-01-24 11:00:44 [pill]  => Installing 'linux-pf-4.4.pkg'[0m
+[1;31m2017-01-24 11:00:44 [pill]  => Done[0m
+[1;31m2017-01-24 11:00:44 [pill]  => Installing 'skalibs-2.4.0.2.pkg'[0m
+[1;31m2017-01-24 11:00:44 [pill]  => Done[0m
+[1;31m2017-01-24 11:00:44 [pill]  => Installing 'execline-2.2.0.0.pkg'[0m
+[1;31m2017-01-24 11:00:44 [pill]  => Done[0m
+[1;31m2017-01-24 11:00:44 [pill]  => Installing 's6-2.4.0.0.pkg'[0m
+[1;31m2017-01-24 11:00:44 [pill]  => Done[0m
+[1;31m2017-01-24 11:00:44 [pill]  => Installing 's6-linux-utils-2.2.0.0.pkg'[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Done[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Installing 'execline-2.2.0.0.pkg'[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Done[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Installing 's6-2.4.0.0.pkg'[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Done[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Installing 's6-portable-utils-2.1.0.0.pkg'[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Done[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Installing 's6-rc-0.1.0.0.pkg'[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Done[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Installing 'tmuxifier-0.12.2.pkg'[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Done[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Installing 'portainer-1.11.0.pkg'[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Done[0m
+[1;31m2017-01-24 11:00:45 [pill]  => 'syslinux-0.2.pkg' not found, going to build now[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Building 'syslinux-0.2.pkg'[0m
+
+[1;31m2017-01-24 11:00:45 [pill]  => 'syslinux-0.2.pkg' download OK[0m
+
+[1;31m2017-01-24 11:00:45 [pill]  => 'syslinux-0.2.pkg' prepare OK[0m
+
+[1;31m2017-01-24 11:00:45 [pill]  => 'syslinux-0.2.pkg' build OK[0m
+[1;31m2017-01-24 11:00:45 [pill]  => 'syslinux-0.2.pkg' package OK[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Installing 'syslinux-0.2.pkg'[0m
+[1;31m2017-01-24 11:00:45 [pill]  => Done[0m
+sending incremental file list
+./
+init
+shutdown
+etc/
+etc/dhcpcd.conf
+etc/fstab
+etc/group
+etc/hostname
+etc/hosts
+etc/leapsecs.dat
+etc/modules
+etc/motd
+etc/motd.custom
+etc/os-release
+etc/profile
+etc/resolv.conf
+etc/securetty
+etc/shells
+etc/sysctl.conf
+etc/timezone
+etc/default/
+etc/default/dhcpcd
+etc/default/dnsmasq
+etc/default/docker
+etc/default/dropbear
+etc/default/portainer
+etc/profile.d/
+etc/profile.d/banner.sh
+etc/s6/
+etc/s6/env/
+etc/s6/env/FONT
+etc/s6/env/KEYMAP
+etc/s6/env/LC_ALL
+etc/s6/env/LC_CTYPE
+etc/s6/env/PATH
+etc/s6/env/TERM
+etc/s6/inactive/
+etc/s6/inactive/console/
+etc/s6/inactive/console/dependencies
+etc/s6/inactive/console/type
+etc/s6/inactive/console/up
+etc/s6/inactive/gotty/
+etc/s6/inactive/gotty/dependencies
+etc/s6/inactive/gotty/run
+etc/s6/inactive/gotty/type
+etc/s6/inactive/syncthing/
+etc/s6/inactive/syncthing/dependencies
+etc/s6/inactive/syncthing/run
+etc/s6/inactive/syncthing/type
+etc/s6/inactive/unison/
+etc/s6/inactive/unison/dependencies
+etc/s6/inactive/unison/logdir
+etc/s6/inactive/unison/run
+etc/s6/inactive/unison/type
+etc/s6/inactive/user-logger/
+etc/s6/inactive/user-logger/consumer-for
+etc/s6/inactive/user-logger/dependencies
+etc/s6/inactive/user-logger/instances
+etc/s6/inactive/user-logger/run
+etc/s6/inactive/user-logger/type
+etc/s6/inactive/user-services/
+etc/s6/inactive/user-services/dependencies
+etc/s6/inactive/user-services/instances
+etc/s6/inactive/user-services/producer-for
+etc/s6/inactive/user-services/run
+etc/s6/inactive/user-services/type
+etc/s6/inactive/user-session/
+etc/s6/inactive/user-session/dependencies
+etc/s6/inactive/user-session/down
+etc/s6/inactive/user-session/instances
+etc/s6/inactive/user-session/type
+etc/s6/inactive/user-session/up
+etc/s6/inactive/user-setup/
+etc/s6/inactive/user-setup/dependencies
+etc/s6/inactive/user-setup/down
+etc/s6/inactive/user-setup/instances
+etc/s6/inactive/user-setup/type
+etc/s6/inactive/user-setup/up
+etc/s6/init/
+etc/s6/init/overlay
+etc/s6/init/stage1
+etc/s6/init/stage2
+etc/s6/init/stage2-finish
+etc/s6/init/stage3
+etc/s6/stage1/
+etc/s6/stage1/.s6-svscan/
+etc/s6/stage1/.s6-svscan/SIGHUP
+etc/s6/stage1/.s6-svscan/SIGINT
+etc/s6/stage1/.s6-svscan/SIGQUIT
+etc/s6/stage1/.s6-svscan/SIGTERM
+etc/s6/stage1/.s6-svscan/SIGUSR1
+etc/s6/stage1/.s6-svscan/SIGUSR2
+etc/s6/stage1/.s6-svscan/crash
+etc/s6/stage1/.s6-svscan/finish
+etc/s6/stage1/getty/
+etc/s6/stage1/getty/run
+etc/s6/stage1/s6-logger/
+etc/s6/stage1/s6-logger/run
+etc/s6/stage2/
+etc/s6/stage2/crond/
+etc/s6/stage2/crond/dependencies
+etc/s6/stage2/crond/run
+etc/s6/stage2/crond/type
+etc/s6/stage2/dhcpcd/
+etc/s6/stage2/dhcpcd/dependencies
+etc/s6/stage2/dhcpcd/run
+etc/s6/stage2/dhcpcd/type
+etc/s6/stage2/dnsmasq/
+etc/s6/stage2/dnsmasq/dependencies
+etc/s6/stage2/dnsmasq/run
+etc/s6/stage2/dnsmasq/type
+etc/s6/stage2/docker/
+etc/s6/stage2/docker/dependencies
+etc/s6/stage2/docker/logdir
+etc/s6/stage2/docker/run
+etc/s6/stage2/docker/type
+etc/s6/stage2/dropbear/
+etc/s6/stage2/dropbear/run
+etc/s6/stage2/dropbear/type
+etc/s6/stage2/fifo-cleanup/
+etc/s6/stage2/fifo-cleanup/run
+etc/s6/stage2/fifo-cleanup/type
+etc/s6/stage2/getty/
+etc/s6/stage2/getty/dependencies
+etc/s6/stage2/getty/instances
+etc/s6/stage2/getty/run
+etc/s6/stage2/getty/type
+etc/s6/stage2/haveged/
+etc/s6/stage2/haveged/run
+etc/s6/stage2/haveged/type
+etc/s6/stage2/hostname/
+etc/s6/stage2/hostname/type
+etc/s6/stage2/hostname/up
+etc/s6/stage2/klogd/
+etc/s6/stage2/klogd/logdir
+etc/s6/stage2/klogd/run
+etc/s6/stage2/klogd/type
+etc/s6/stage2/loopback/
+etc/s6/stage2/loopback/down
+etc/s6/stage2/loopback/type
+etc/s6/stage2/loopback/up
+etc/s6/stage2/mdev/
+etc/s6/stage2/mdev/finish
+etc/s6/stage2/mdev/run
+etc/s6/stage2/mdev/type
+etc/s6/stage2/mount-cgroups/
+etc/s6/stage2/mount-cgroups/dependencies
+etc/s6/stage2/mount-cgroups/down
+etc/s6/stage2/mount-cgroups/type
+etc/s6/stage2/mount-cgroups/up
+etc/s6/stage2/mount-data/
+etc/s6/stage2/mount-data/down
+etc/s6/stage2/mount-data/type
+etc/s6/stage2/mount-data/up
+etc/s6/stage2/mount-dev/
+etc/s6/stage2/mount-dev/down
+etc/s6/stage2/mount-dev/type
+etc/s6/stage2/mount-dev/up
+etc/s6/stage2/mount-swap/
+etc/s6/stage2/mount-swap/down
+etc/s6/stage2/mount-swap/type
+etc/s6/stage2/mount-swap/up
+etc/s6/stage2/mount-sys/
+etc/s6/stage2/mount-sys/down
+etc/s6/stage2/mount-sys/type
+etc/s6/stage2/mount-sys/up
+etc/s6/stage2/ntpd/
+etc/s6/stage2/ntpd/dependencies
+etc/s6/stage2/ntpd/run
+etc/s6/stage2/ntpd/type
+etc/s6/stage2/portainer/
+etc/s6/stage2/portainer/dependencies
+etc/s6/stage2/portainer/run
+etc/s6/stage2/portainer/type
+etc/s6/stage2/rc-default/
+etc/s6/stage2/rc-default/contents
+etc/s6/stage2/rc-default/type
+etc/s6/stage2/rc-fs/
+etc/s6/stage2/rc-fs/contents
+etc/s6/stage2/rc-fs/type
+etc/s6/stage2/rc-local/
+etc/s6/stage2/rc-local/contents
+etc/s6/stage2/rc-local/type
+etc/s6/stage2/rc-net/
+etc/s6/stage2/rc-net/contents
+etc/s6/stage2/rc-net/type
+etc/s6/stage2/rc-service/
+etc/s6/stage2/rc-service/contents
+etc/s6/stage2/rc-service/type
+etc/s6/stage2/rngd/
+etc/s6/stage2/rngd/run
+etc/s6/stage2/rngd/type
+etc/s6/stage2/sysctl/
+etc/s6/stage2/sysctl/type
+etc/s6/stage2/sysctl/up
+etc/s6/stage2/syslogd/
+etc/s6/stage2/syslogd/run
+etc/s6/stage2/syslogd/type
+etc/sudoers.d/
+etc/sudoers.d/docker
+sbin/
+sbin/poweroff
+sbin/reboot
+sbin/shutdown
+usr/
+usr/bin/
+usr/bin/locale
+usr/bin/lsb_release
+usr/bin/portwait
+usr/bin/s6-withenv
+
+sent 31,849 bytes  received 3,233 bytes  70,164.00 bytes/sec
+total size is 20,063  speedup is 0.57
+sending incremental file list
+./
+.bashrc
+.htoprc
+.tmux.conf
+.vimrc
+
+sent 4,912 bytes  received 95 bytes  10,014.00 bytes/sec
+total size is 4,598  speedup is 0.92
+1533 blocks
+[1;31m2017-01-24 11:00:45 [make_iso.sh] Compressing initrd[0m
+  --- %           1.0 MiB / 3.2 MiB = 0.307                   0:01               --- %           1.4 MiB / 6.1 MiB = 0.232                   0:02               --- %           1.8 MiB / 8.3 MiB = 0.213   2.8 MiB/s       0:03               --- %          2.3 MiB / 10.4 MiB = 0.220   2.6 MiB/s       0:04               --- %          2.9 MiB / 12.8 MiB = 0.230   2.5 MiB/s       0:05               --- %          3.5 MiB / 14.9 MiB = 0.232   2.5 MiB/s       0:06               --- %          4.1 MiB / 17.3 MiB = 0.237   2.5 MiB/s       0:07               --- %          4.5 MiB / 19.9 MiB = 0.224   2.5 MiB/s       0:08               100 %       5451.7 KiB / 22.7 MiB = 0.234   2.5 MiB/s       0:08             
+[1;31m2017-01-24 11:00:54 [make_iso.sh] Making final image[0m
+xorriso 1.4.6 : RockRidge filesystem manipulator, libburnia project.
+
+Drive current: -outdev 'stdio:/opt/build/dist/redpill_x86_64.img'
+Media current: stdio file, overwriteable
+Media status : is blank
+Media summary: 0 sessions, 0 data blocks, 0 data, 16.1g free
+Added to ISO image: directory '/'='/iso'
+xorriso : UPDATE : 8 files added in 1 seconds
+xorriso : UPDATE : 8 files added in 1 seconds
+xorriso : NOTE : Copying to System Area: 432 bytes from file '/usr/share/syslinux/isohdpfx.bin'
+libisofs: NOTE : Aligned image size to cylinder size by 85 blocks
+ISO image produced: 4096 sectors
+Written to medium : 4096 sectors at LBA 0
+Writing to 'stdio:/opt/build/dist/redpill_x86_64.img' completed successfully.
+
+ls -la dist
+total 8208
+drwxr-xr-x  4 shaman shaman    4096 Jan 20 04:20 .
+drwx------ 11 root   root      4096 Jan 24 11:38 ..
+drwxr-xr-x  3 shaman shaman    4096 Jan  9 18:23 fusion
+-rw-r--r--  1 root   root   8388608 Jan 24 12:00 redpill_x86_64.img
+drwxr-xr-x  2 shaman shaman    4096 Jan 10 01:49 vagrant
+cd dist && /usr/bin/python -m SimpleHTTPServer 8000

@@ -1,0 +1,5 @@
+FROM scratch
+
+ADD local/rootfs/ /
+
+ENTRYPOINT ["/init"]

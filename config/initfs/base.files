@@ -1,0 +1,10 @@
+/bin/s6-devd
+/bin/s6-uevent-listener
+/bin/s6-uevent-spawner
+/etc/mdev.conf
+/etc/ssl/certs/ca-certificates.crt
+/lib/mdev/ide_links
+/lib/mdev/usbdisk_link
+/lib/mdev/usbdev
+/usr/share/terminfo/s/screen-256color
+/usr/share/terminfo/x/xterm-256color

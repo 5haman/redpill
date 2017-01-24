@@ -1,0 +1,18 @@
+# If not running interactively, don't do anything.
+[ -z "$PS1" ] && return
+
+# don't put duplicate lines in the history. See bash(1) for more options.
+HISTCONTROL=ignoredups:ignorespace
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1).
+HISTSIZE=1024
+HISTFILESIZE=1024000
+
+# append to the history file, don't overwrite it.
+shopt -s histappend
+shopt -s checkwinsize
+
+#export PS1="[\[\e[32;1m\]\A\[\e[m\]\[\e[31;1m\] ${ENV}:\[\e[m\]\[\e[36;1m\] \w\[\e[m\]\]]\$ "
+export PS1="\[\e[36;1m\]${CONT_ENV}: \[\e[m\]\[\e[32;1m\]\w\[\e[m\]\[\e[36;1m\] \A\[\e[m\]\] \$ "
+
+alias ll='ls -la'

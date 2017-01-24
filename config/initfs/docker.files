@@ -1,0 +1,9 @@
+/lib/ld-musl-x86_64.so.1
+/lib/libc.musl-x86_64.so.1
+/usr/bin/docker
+/usr/bin/docker-containerd
+/usr/bin/docker-containerd-ctr
+/usr/bin/docker-containerd-shim
+/usr/bin/docker-proxy
+/usr/bin/docker-runc
+/usr/bin/dockerd

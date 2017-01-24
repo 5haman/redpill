@@ -1,0 +1,7 @@
+#!/bin/sh
+
+source /etc/default/docker
+
+ulimit -n 1048576
+
+/usr/bin/dockerd -p /run/dockerd.pid $DOCKER_ARGS 2>&1

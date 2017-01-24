@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ "$1" == "-a" ]; then
+   echo "C
+C.UTF-8
+en_US.utf8
+POSIX"
+else
+   echo "LANG=en_US.UTF-8
+LANGUAGE=en_US:en
+LC_ALL=en_US.UTF-8"
+fi

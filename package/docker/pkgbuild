@@ -1,32 +1,89 @@
 # package: docker
 
 pkgname=docker
-pkgver=1.12.5
+pkgver=1.12.6
 pkgdesc="Pack, ship and run any application as a lightweight container"
 url="https://docker.com/"
 source="https://get.docker.com/builds/Linux/x86_64/$pkgname-$pkgver.tgz"
 
+_runc_source="https://github.com/docker/runc.git"
+_containerd_source="https://github.com/$pkgname/containerd.git"
+_runc_ver=50a19c6ff828c58e5dab13830bd3dacde268afe5
+_containerd_ver=2a5e70cbf65457815ee76b7e5dd2a01292d9eca8
+
+RUNC_COMMIT=50a19c6ff828c58e5dab13830bd3dacde268afe5
+CONTAINERD_COMMIT=2a5e70cbf65457815ee76b7e5dd2a01292d9eca8
+
+build_runc() {
+        git clone https://github.com/docker/runc.git "$GOPATH/src/github.com/opencontainers/runc"
+        cd "$GOPATH/src/github.com/opencontainers/runc"
+        git checkout -q "$RUNC_COMMIT"
+
+        make BUILDTAGS="" static
+        cp runc $OUTDIR/docker-runc
+
+       make static
+
+        cp bin/containerd $OUTDIR/docker-containerd
+        cp bin/containerd-shim $OUTDIR/docker-containerd-shim
+        cp bin/ctr $OUTDIR/docker-containerd-ctr
+}
+
+_godir="$GOPATH/src/github.com"
+
 download() {
+    # get prebuilt docker binaries
     if [ ! -d "$_builddir" ]; then
         curl -sSL "$source" | tar xz -C "$buildcache"
         mv "$buildcache/$pkgname" "$buildcache/$pkgname-$pkgver"
     fi
+
+    # get runc sources
+    if [ ! -d "${_godir}/docker/containerd" ]; then
+	git clone https://github.com/docker/containerd.git "${_godir}/docker/containerd"
+        cd "${_godir}/docker/containerd"
+        git checkout -q "$CONTAINERD_COMMIT"
+    fi
+    
+    # get containerd sources
+    if [ ! -d "${_godir}/opencontainers/runc" ]; then
+        git clone https://github.com/docker/runc.git "${_godir}/opencontainers/runc"
+        cd "${_godir}/opencontainers/runc"
+        git checkout -q "$RUNC_COMMIT"
+    fi
+
 }
 
 prepare() {
     echo
+    #cd "$_gobuilddir/opencontainers/runc"
+    #git checkout -q "$_runc_ver"
+
+    #cd "$_gobuilddir/docker/containerd"
+    #git checkout -q "$_containerd_ver"
 }
 
 build() {
-    cd "$_builddir"
-    sh -c "strip --strip-all *; exit 0"
+    cd "${_godir}/opencontainers/runc"
+    make BUILDTAGS="" static
+
+    cd "${_godir}/docker/containerd"
+    make static
 }
 
 package() {
-    cd "$_builddir"
     tmpdir=$(mktemp -d /tmp/$pkgname.XXX)
     mkdir -p "$tmpdir/usr/bin/"
-    install -m755 * "$tmpdir/usr/bin/"
+
+    cd "${_godir}/docker/containerd/bin"
+    cp containerd "$tmpdir/usr/bin/docker-containerd"
+    cp containerd-shim "$tmpdir/usr/bin/docker-containerd-shim"
+    cp ctr "$tmpdir/usr/bin/docker-containerd-ctr"
+    cp "${_godir}/opencontainers/runc/runc" "$tmpdir/usr/bin/docker-runc"
+
+    cd "$_builddir"
+    cp docker dockerd "$tmpdir/usr/bin"
+
     cd $tmpdir
     find | cpio -o -H newc | gzip -9 > "$pkgcache/$pkgname-$pkgver.$pkgext"
     rm -rf $tmpdir
